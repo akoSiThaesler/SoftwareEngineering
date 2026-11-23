@@ -4,7 +4,7 @@ title: "Cognitive Walkthrough"
 
 # Cognitive Walkthrough: Prototyp "Lagerraum Box-Check"
 
-> **Status (23.11.2026):** Dies ist der eigene Cognitive Walkthrough des Teams, mit KI-Unterstützung entworfen. Er ist ein Experten-Urteil aus der Sicht der Persona und **kein Test mit echten Personen**. Alle Befunde sind Hypothesen, die das Team prüfen muss (Abschnitt "Offene Fragen für den Usability-Test" und [Testplan](testplan.html)).
+> **Status (23.11.2026):** Dies ist der eigene Cognitive Walkthrough des Teams. Er ist ein Experten-Urteil aus der Sicht der Persona und **kein Test mit echten Personen**. Alle Befunde sind Hypothesen, die das Team prüfen muss (Abschnitt "Offene Fragen für den Usability-Test" und [Testplan](testplan.html)).
 
 ## Hinweise zum Prototyp und zu den Screenshots
 

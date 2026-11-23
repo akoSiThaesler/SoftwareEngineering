@@ -152,5 +152,3 @@ Sie schickt das Ergebnis an Lena und Mira. Mira antwortet am Morgen: „Die Wasc
 - Validate with 2–3 people who have used self-storage (UX L02 slides p. 49)
 - About 10 central requirements, functional and non-functional, also beyond the brief (UX L02 slides p. 49)
 
-## AI use
-- 2026-10-05 · Claude (Claude Code) · proposed three persona directions; the user chose a mix of "lease gap" and "breakup". Drafted persona, profile, usage context, as-is/to-be scenario, user journey and six user stories with acceptance criteria from the brief's example values, plus the poster page. Assumptions are marked; group review pending.

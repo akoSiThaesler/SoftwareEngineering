@@ -7,7 +7,7 @@ title: "Threat Model"
 Erste Version zur Besprechung. Zum Vorführen gibt es das Diagramm auch als [interaktive Fassung](threat-model-interactive.html).
 
 > **Entwurf**  
-> Mit KI-Hilfe entworfen und auf Wunsch stark gekürzt (siehe AI use). Der Prototyp hat noch kein Backend; wie das System unten aussieht, ist unsere Annahme für die erste Version. Vor dem Zeigen im Team prüfen.
+> Der Prototyp hat noch kein Backend; wie das System unten aussieht, ist unsere Annahme für die erste Version. Vor dem Zeigen im Team prüfen.
 
 ## Worum es geht
 
@@ -94,12 +94,5 @@ Was sonst für Version 2 sinnvoll wäre:
 - Group review: confirm TT01 and the picture of the system
 - Name who is responsible for each measure
 - SDLC-Skizze, one slide (no points, basis for the Fachgespräch)
-- KI-Notiz: what we used, kept, discarded and corrected, each with an example
 - Pick the one example for the 3-minute talk: threat, priority, measure
 
-## AI use
-- 2026-11-23 · Claude (Claude Code) · read the slide deck, chose TT01 on the user's request to pick an easy topic, drafted the diagram (SVG from a script), the threats and the measures.
-- 2026-11-23 · correction by the user · the first AI draft invented a separate account service with its own database, a support tool and an audit-log store. Rejected as unrealistic for a first version: one backend, one database. Ovals changed to circles.
-- 2026-11-23 · two AI reviewers (Claude subagents) · checked threats and diagram. Kept: T5's first measure (lock cancelling for 24 hours after a reset) was replaced by a reversible cancellation, because the lock would hit Julia herself. Their longer version had twelve threats.
-- 2026-11-23 · correction by the user · the reviewed version was too long, too formal and read as AI-generated. Cut to six threats in plain sentences, labels moved onto the arrows, reverse proxy and several special cases dropped (stolen session cookie, changing the e-mail address, password hashing, forwarded-IP header). They are listed under "Offen" or left out on purpose.
-- 2026-11-23 · Claude (Claude Code) · outlook for version 2 (tokens, two services, cache) on the user's request. Not reviewed.

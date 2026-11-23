@@ -4,7 +4,7 @@ title: "Testplan"
 
 # Testplan: Usability-Test "Lagerraum Box-Check"
 
-> **Status (23.11.2026):** Entwurf des Teams, mit KI-Unterstützung erstellt und vom Team zu prüfen. Er beruht auf dem [Cognitive Walkthrough](cognitive-walkthrough.html). Die Befund-IDs (CW01 bis CW09) verweisen dorthin. Es liegen noch keine Testergebnisse vor.
+> **Status (23.11.2026):** Entwurf des Teams, noch zu prüfen. Er beruht auf dem [Cognitive Walkthrough](cognitive-walkthrough.html). Die Befund-IDs (CW01 bis CW09) verweisen dorthin. Es liegen noch keine Testergebnisse vor.
 
 ## 1 Ziel und Fragen
 

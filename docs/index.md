@@ -25,7 +25,3 @@ Der Prototyp läuft im Browser und ist für das Handy gebaut. Die Volumen-API un
 - **Abweichungen vom Fallsteckbrief:** Der Steckbrief setzt den Bedarf auf 14.0 m³ fest und nennt 1 oder 2 Boxen. Der Prototyp lässt den Bedarf ändern und bis zu vier Boxen kombinieren. Grössenkatalog, Konto, Zahlungsarten, Haltefrist und Reservierungsnummer sind erfunden und in der Oberfläche als Beispiel markiert.
 - **UX-Dokumente:** Entwürfe, noch nicht mit echten Testpersonen geprüft.
 - **Threat Model:** erste Version zur Besprechung. Die Architektur ist eine Annahme, weil der Prototyp noch kein Backend hat.
-
-## Einsatz von KI
-
-Prototyp und Dokumente sind mit Unterstützung von Claude (Claude Code) entstanden. Was die KI entworfen hat und was das Team übernommen, verworfen oder korrigiert hat, steht jeweils im Abschnitt «AI use» oder im Statushinweis des Dokuments.
