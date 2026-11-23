@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lagerraum Box-Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Lagerraum Box-Check. Tokens: Beton (Grund), Asphalt (Text), Tor-Blau (Aktion), Warnband-Gelb (nur "knapp"). */
+:root{
+  --beton:#E9EBED; --paper:#FFFFFF; --ink:#171B20; --muted:#515A65; --line:#D6DADF; --field:#7A848F;
+  --tor:#1F4E8C; --tor-dark:#163A69; --tor-tint:#EDF3FA; --band:#F4C20D;
+  --ok:#1B6B4A; --no:#A1241F; --warn-bg:#FFEFB8; --warn-fg:#3A2A00;
+  --bar-h:56px; --tabs-h:64px;
+  --display:"Barlow Condensed","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --text:"Barlow","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{scroll-padding-bottom:260px;scroll-padding-top:var(--bar-h)}
+body{background:#C9CED4;color:var(--ink);font:17px/1.45 var(--text);overflow-wrap:break-word;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+h1,h2,p{margin:0}
+:focus-visible{outline:3px solid #0B63CE;outline-offset:2px}
+
+/* App-Rahmen */
+.stage{display:flex;justify-content:center;align-items:flex-start;gap:24px}
+.shell{flex:0 1 430px;min-width:0;min-height:100vh;background:var(--paper);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(23,27,32,.18)}
+.appbar{position:sticky;top:0;z-index:10;height:var(--bar-h);background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:0 8px 0 4px}
+.appbar .back{width:48px;height:48px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.appbar [hidden]{display:none !important}
+.appbar .title{font:600 20px/1 var(--display);letter-spacing:.01em;padding-left:4px}
+.appbar .mark{display:flex;align-items:center;gap:10px;padding-left:12px;font:700 24px/1 var(--display);letter-spacing:.01em}
+.appbar .mark svg{flex:none}
+.appbar .proto{margin-left:auto;margin-right:8px;font-size:13px;color:var(--muted)}
+#app{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:clip}
+main{flex:1;padding:8px 20px 28px;display:flex;flex-direction:column;min-width:0}
+.tabs{position:sticky;bottom:0;z-index:10;height:var(--tabs-h);background:var(--paper);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.tab{border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);border-top:3px solid transparent;min-width:0}
+.tab .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px}
+.tab[aria-current="page"]{color:var(--tor);border-top-color:var(--tor)}
+@media (prefers-reduced-motion:no-preference){
+  #app.fwd main{animation:in-fwd .18s ease-out}
+  #app.bwd main{animation:in-bwd .18s ease-out}
+  .sheet{animation:sheet-up .2s ease-out}
+  .scrim{animation:fade .2s ease-out}
+}
+@keyframes in-fwd{from{opacity:.4;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes in-bwd{from{opacity:.4;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes sheet-up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* Typografie */
+h1{font:700 34px/1.05 var(--display);letter-spacing:.005em;padding:14px 0 6px}
+h1:focus{outline:none}
+h2{font-size:15px;font-weight:700;color:var(--muted)}
+.lead{color:var(--muted);font-size:15px}
+.small{font-size:14px;color:var(--muted);font-weight:500}
+main p{min-width:0}
+main>.lead{padding:10px 0}
+
+/* Abschnitte: weisse Fläche mit Haarlinie statt Kartenstapel */
+.card{padding:18px 0;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line);min-width:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+.row h2{font:700 22px/1 var(--display);color:var(--ink)}
+
+/* Bedarf */
+.needrow{display:flex;align-items:center;gap:8px}
+.needrow input{width:112px;text-align:center;font:700 26px var(--display)}
+.needrow .unit{font:700 22px var(--display);margin-right:auto;white-space:nowrap}
+.sq{flex:none;width:52px;height:52px;border:0;border-radius:50%;background:var(--beton);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sq:active,.chip:active,.btn:active,.btn2:active,.tab:active{transform:scale(.98)}
+
+/* Hinweiszeilen: Vorschlag (blau), Status (grau), Reservierung (dunkel) */
+.reco{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 14px;border-radius:12px;background:var(--tor-tint);margin-top:12px}
+.reco:empty{display:none}
+.reco>span:first-child{flex:1 1 180px;min-width:0}
+.reco.info{background:var(--beton)}
+.reco.res{background:var(--ink);color:#fff}
+.reco.res .small{color:#C9D0D8}
+.reco.res .link{color:#fff;border-color:#8792A0}
+.pair{display:flex;gap:6px;flex:none}
+.link{min-height:44px;padding:0 14px;border:1.5px solid var(--tor);border-radius:999px;background:transparent;color:var(--tor);font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap}
+.reco.info .link{border-color:var(--field);color:var(--ink)}
+
+/* Grössenwahl: Boxen massstäblich gezeichnet, Person als Vergleich */
+.chips{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.chip{position:relative;text-align:left;padding:8px 44px 8px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-content:center;min-width:0}
+.chip svg{grid-row:1 / span 3;width:118px;height:96px;display:block}
+.chip b,.chip strong,.chip span{grid-column:2}
+.chip b{align-self:end}
+.chip span{align-self:start}
+.pays .chip,.chip.wide{display:flex;flex-direction:column;padding:8px 14px}
+.chip b{font:700 20px/1.1 var(--display)}
+.chip strong{font-size:16px;font-weight:600}
+.chip span{font-size:14px;color:var(--muted)}
+.chip.wide{grid-column:1 / -1;min-height:52px;justify-content:center;font-weight:600}
+.chip[aria-pressed="true"]{border-color:var(--tor);box-shadow:inset 0 0 0 1.5px var(--tor);background:var(--tor-tint)}
+.chip[aria-pressed="true"]::after{content:"";position:absolute;top:50%;margin-top:-11px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--tor) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/14px no-repeat}
+.pays{display:flex;flex-direction:column;gap:8px}
+.pays .chip{min-height:56px;justify-content:center}
+.pays .chip strong{font-size:17px}
+
+/* Felder */
+.dims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);font-weight:500}
+.fl{display:flex;flex-direction:column;gap:4px;min-width:0}
+input[type=text],input[type=email],input[type=date],input[type=tel]{height:52px;width:100%;min-width:0;border:1.5px solid var(--field);border-radius:12px;padding:0 14px;font:600 18px var(--text);color:var(--ink);background:var(--paper)}
+input:focus{border-color:var(--tor)}
+input.bad{border-color:var(--no);border-width:2.5px}
+.err{color:var(--no);font-size:15px;font-weight:600}
+.err:empty{display:none}
+.hintwarn{background:var(--warn-bg);color:var(--warn-fg);border-radius:10px;padding:10px 12px;font-size:15px;font-weight:600}
+.hintwarn:empty{display:none}
+.two{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px}
+
+/* Schaltflächen */
+.btn{min-height:54px;width:100%;border:0;border-radius:14px;background:var(--tor);color:#fff;font-weight:700;font-size:18px;cursor:pointer;padding:8px 18px;display:flex;align-items:center;justify-content:center;text-align:center}
+.btn[disabled]{background:var(--beton);color:var(--muted);cursor:default}
+.btn2{min-height:50px;width:100%;border:0;border-radius:14px;background:var(--beton);color:var(--ink);font-weight:600;cursor:pointer;padding:8px 18px;text-align:center}
+.btn2[disabled]{opacity:.5}
+.btn small,.btn2 small{display:block;font-weight:500;font-size:14px}
+/* In Abschnitten sind Nebenaktionen Listenzeilen mit Pfeil, keine Knopfstapel */
+.card>.btn2,.note>.btn2{background:transparent;border-radius:0;text-align:left;padding:12px 28px 12px 0;min-height:52px;border-top:1px solid var(--line);position:relative}
+.card>h2+.btn2{border-top:0}
+.card>.btn2::after,.note>.btn2::after{content:"";position:absolute;right:4px;top:50%;width:9px;height:9px;border-right:2.5px solid var(--field);border-top:2.5px solid var(--field);transform:translateY(-50%) rotate(45deg)}
+.card>.btn2 small{color:var(--muted)}
+.note>.btn2{border-top-color:rgba(58,42,0,.25);margin-top:10px}
+.ghost{min-height:52px;margin-top:14px;border:1.5px dashed var(--field);border-radius:14px;background:transparent;font-weight:600;cursor:pointer;text-align:left;padding:0 16px}
+.quiet{min-height:48px;border:0;background:transparent;color:var(--no);font-weight:600;text-align:left;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.actions{position:sticky;bottom:var(--tabs-h);z-index:5;background:var(--paper);border-top:1px solid var(--line);padding:10px 20px 12px;display:flex;flex-direction:column;gap:8px}
+.actions:empty{display:none}
+.alert{color:var(--no);font-weight:600;font-size:15px}
+.saved{color:var(--ok);font-weight:700;font-size:15px}
+.saved:empty{display:none}
+
+/* Ergebnis: Band über die ganze Breite */
+.hero{margin:0 -20px;padding:20px 20px 22px;display:flex;flex-direction:column;gap:6px}
+.hero .v{display:flex;align-items:center;gap:12px}
+.hero h1{font-size:44px !important;padding:0}
+.hero p{font-size:18px}
+.hero.ok{background:var(--ok);color:#fff}
+.hero.warn{background:var(--band);color:var(--warn-fg)}
+.hero.no{background:var(--no);color:#fff}
+.note{margin-top:14px;padding:14px 14px 14px 20px;border-radius:12px;background:var(--warn-bg);color:var(--warn-fg);position:relative;overflow:hidden}
+/* Warnband-Streifen: steht nur an Hinweisen zur Knappheit und zu Auffälligem */
+.note::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(135deg,var(--ink) 0 6px,var(--band) 6px 12px)}
+.viz{position:relative;height:88px}
+.viz .bar{position:absolute;left:0;right:0;top:24px;height:44px;background:var(--beton);border-radius:6px;overflow:hidden;display:flex}
+.viz .seg{color:#fff;font:700 15px var(--display);display:flex;align-items:center;justify-content:center;border-right:2px solid #fff;overflow:hidden}
+.viz .band{position:absolute;top:24px;height:44px;background:repeating-linear-gradient(135deg,rgba(23,27,32,.85) 0 4px,var(--band) 4px 9px);opacity:.85}
+.viz .mark{position:absolute;top:18px;height:56px;width:3px;margin-left:-1.5px;background:var(--ink);box-shadow:0 0 0 1.5px #fff}
+.viz .lbl{position:absolute;top:0;transform:translateX(-50%);font-size:14px;font-weight:700;white-space:nowrap}
+.viz .ax{position:absolute;top:70px;font-size:13px;color:var(--muted)}
+.legend{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:var(--muted)}
+.legend i{flex:none;margin-top:4px;width:22px;height:12px;background:repeating-linear-gradient(135deg,rgba(23,27,32,.85) 0 4px,var(--band) 4px 9px)}
+table{width:100%;border-collapse:collapse}
+td{padding:12px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+td:first-child{min-width:0;word-break:break-word}
+td:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;padding-left:12px}
+tr.sum td{font-weight:700}
+tr.diff td{font:700 26px/1.1 var(--display);border-bottom:0;padding-top:14px}
+.ex{display:inline-block;padding:0 6px;border:1px dashed var(--field);border-radius:4px;font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.hero .ex{border-color:currentColor;color:inherit}
+
+/* Konto */
+.who{display:flex;align-items:center;gap:14px}
+.who div{min-width:0;word-break:break-word}
+.who .big{flex:none;width:60px;height:60px;border-radius:50%;background:var(--tor);color:#fff;display:flex;align-items:center;justify-content:center;font:700 24px var(--display)}
+.who .tag{display:inline-block;margin-top:4px;padding:1px 8px;border:1px solid var(--field);border-radius:999px;font-size:13px;color:var(--muted);font-weight:600}
+.empty{padding:28px 0;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.empty svg{width:132px;height:auto}
+
+/* Rückfrage als Bottom-Sheet, Meldungen als Toast */
+.scrim{position:fixed;inset:0;z-index:30;background:rgba(23,27,32,.5)}
+.sheet{position:fixed;left:50%;bottom:0;z-index:31;width:min(430px,100%);margin-left:max(-215px,-50%);background:var(--paper);border-radius:20px 20px 0 0;padding:10px 20px 24px;display:flex;flex-direction:column;gap:12px}
+.sheet::before{content:"";align-self:center;width:40px;height:4px;border-radius:2px;background:var(--line)}
+.sheet h2{font:700 26px/1.1 var(--display);color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabs-h) + 92px);z-index:40;transform:translateX(-50%);max-width:min(380px,90vw);background:var(--ink);color:#fff;border-radius:999px;padding:12px 18px;font-size:15px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .15s}
+.toast.show{opacity:1}
+
+/* Simulation (nur ?test) */
+.sim{display:none}
+.sim.on{display:flex;flex-direction:column;gap:14px;flex:0 0 280px;position:sticky;top:16px;margin-top:16px;background:#fff;border:2px dashed var(--muted);border-radius:12px;padding:14px;font-size:15px}
+.sim h2{font:700 22px var(--display);color:var(--ink)}
+.sim .hint{font-size:13px;color:var(--muted)}
+.sim select{height:44px;width:100%;font:inherit;border:1.5px solid var(--field);border-radius:8px;background:#fff;color:var(--ink);padding:0 8px}
+.sim label{color:var(--ink);font-size:15px}
+.sim .chk{flex-direction:row;align-items:center;gap:10px;min-height:44px;font-weight:500}
+.sim .chk input{width:20px;height:20px;flex:none}
+.simtab{display:none}
+@media (max-width:859px){
+  body{background:var(--paper)}
+  .shell{box-shadow:none}
+  .sim.on{position:fixed;top:0;right:0;bottom:0;width:min(300px,86vw);margin:0;border-radius:0;border-width:0 0 0 2px;overflow-y:auto;transform:translateX(100%);visibility:hidden;transition:transform .2s ease,visibility .2s;z-index:50}
+  .sim.on.open{transform:none;visibility:visible;box-shadow:-8px 0 24px rgba(20,33,61,.25)}
+  .simtab.on{display:block;position:fixed;right:0;top:72px;z-index:51;min-height:44px;padding:0 12px;border:0;border-radius:10px 0 0 10px;background:var(--ink);color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+  .sim.on.open ~ .simtab{right:min(300px,86vw)}
+}
+@media (prefers-reduced-motion:reduce){.sim.on,.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="stage">
+<div class="shell">
+  <header class="appbar">
+    <button type="button" class="back" id="back" aria-label="Zurück" hidden><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="mark" id="mark"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28"><rect x="2" y="4" width="24" height="22" rx="2" fill="#1F4E8C"/><path d="M5 10h18M5 14h18M5 18h18M5 22h18" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><rect x="2" y="4" width="24" height="4" rx="2" fill="#163A69"/></svg>Lagerraum</div>
+    <div class="title" id="title" hidden></div>
+    <span class="proto" id="proto">Prototyp</span>
+  </header>
+  <div id="app"></div>
+  <nav class="tabs" aria-label="Bereiche">
+    <button type="button" class="tab" id="tab-check" data-tab="check"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg><span class="nm">Prüfen</span></button>
+    <button type="button" class="tab" id="tab-booking" data-tab="booking"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="nm">Reservierung</span></button>
+    <button type="button" class="tab" id="acct" data-tab="account"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span class="nm" id="acct-nm">Anmelden</span></button>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<aside id="test" class="sim" aria-label="Simulation"></aside>
+<button type="button" id="simtab" class="simtab" aria-expanded="false" aria-controls="test">Simulation</button>
+</div>
+<script>
+'use strict';
+/* Fachregel aus Fallsteckbrief 7: Standardbedarf 14.0 m³, Knappzone ±0.7 m³. */
+const DEFAULT_NEED = '14.0', ZONE = 0.7;
+/* Der Steckbrief nennt 1 oder 2 Boxen. MAX_BOXES erweitert das bewusst; auf 2 setzen für das Steckbrief-Verhalten. */
+const MAX_BOXES = 4;
+/* Plätze heissen Box 1-4, Katalog-Grössen S/M/L/XL: zwei Benennungen, die sich nicht überschneiden. */
+const NAMES = ['Box 1', 'Box 2', 'Box 3', 'Box 4'];
+const sizeName = (id) => 'Grösse ' + id;
+const COLORS = ['#163A69', '#3F74B8', '#6B4E9B', '#7A5200'];
+const LABELS = { l: 'Länge', b: 'Breite', h: 'Höhe' };
+/* Katalog = Beispielboxen aus dem Fallsteckbrief. Volumen hier nur zur Orientierung, geprüft wird über die API. */
+const CATALOG = [
+  { id: 'S', vol: 4.0, l: '2.0', b: '1.0', h: '2.0' },
+  { id: 'M', vol: 4.5, l: '1.5', b: '1.5', h: '2.0' },
+  { id: 'L', vol: 10.0, l: '2.0', b: '2.0', h: '2.5' },
+  { id: 'XL', vol: 18.0, l: '3.0', b: '2.5', h: '2.4' }
+];
+const EXAMPLES = {
+  'Normalfall (22.5 m³)': [['3.0', '2.5', '2.4'], ['1.5', '1.5', '2.0']],
+  'Genau auf der Grenze (14.0 m³)': [['2.0', '2.0', '2.5'], ['2.0', '1.0', '2.0']],
+  'Knapp darunter (13.6 m³)': [['2.0', '2.0', '2.5'], ['1.8', '1.0', '2.0']],
+  'Knapp darüber (14.4 m³)': [['2.0', '2.0', '2.5'], ['2.0', '1.1', '2.0']],
+  'Rundungsfalle (13.98 m³)': [['2.0', '2.0', '2.5'], ['1.99', '1.0', '2.0']],
+  'Ungültige Eingabe': [['3.0', '-2', '2.4']],
+  'Nur eine Box (10.0 m³)': [['2.0', '2.0', '2.5']]
+};
+const emptyBox = () => ({ mode: null, l: '', b: '', h: '' });
+const fresh = () => ({ step: 1, needStr: DEFAULT_NEED, boxes: [emptyBox()], busy: false, apiErr: false, showErr: false, res: null,
+  form: { date: '', until: '', name: '', mail: '', pay: 'invoice' }, formErr: false, bookBusy: false, bookErr: false, resNo: '',
+  editing: false, editForm: false, confirmCancel: false });
+/* Bestehende Reservierung (eine pro Gerät), nur lokal gespeichert. */
+const KEY_R = 'lagerraum-box-check-reservierung-v1';
+let BOOKING = null, UNDO = null, FLASH = '';
+try { BOOKING = JSON.parse(localStorage.getItem(KEY_R) || 'null'); } catch (e) { BOOKING = null; }
+/* Stornierte Reservierung bleibt wiederherstellbar, auch nach Neuladen, bis sie ausgeblendet oder neu reserviert wird. */
+const KEY_U = 'lagerraum-box-check-storniert-v1';
+try { UNDO = JSON.parse(localStorage.getItem(KEY_U) || 'null'); } catch (e) { UNDO = null; }
+function saveUndo() { try { if (UNDO) localStorage.setItem(KEY_U, JSON.stringify(UNDO)); else localStorage.removeItem(KEY_U); } catch (e) { /* ohne Speicher nur bis zum Neuladen */ } }
+/* Ältere gespeicherte Reservierungen ohne neue Felder ergänzen. */
+function normBooking(b) {
+  const okStr = (x) => typeof x === 'string';
+  if (!b || typeof b !== 'object' || !okStr(b.resNo) || !b.form || !b.res || !Array.isArray(b.boxes) || !b.boxes.length) return null;
+  b.form = Object.assign({ date: '', until: '', name: '', mail: '', pay: 'invoice' }, b.form);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.form.date)) || !okStr(b.form.name) || !okStr(b.form.mail)) return null;
+  if (b.form.until && !/^\d{4}-\d{2}-\d{2}$/.test(String(b.form.until))) b.form.until = '';
+  if (!Array.isArray(b.res.vols) || b.res.vols.length !== b.boxes.length || typeof b.res.total !== 'number' || typeof b.res.need !== 'number') return null;
+  b.res = Object.assign({ odd: [], over: null }, b.res);
+  b.needStr = String(b.needStr || b.res.need);
+  return b;
+}
+BOOKING = normBooking(BOOKING); UNDO = normBooking(UNDO);
+function saveBooking() { try { if (BOOKING) localStorage.setItem(KEY_R, JSON.stringify(BOOKING)); else localStorage.removeItem(KEY_R); } catch (e) { /* ohne Speicher gilt die Reservierung nur bis zum Neuladen */ } }
+/* Demo-Konto mit erfundenen Angaben der Persona. Kein Passwort, nichts verlässt das Gerät. Konto ist optional. */
+const KEY_A = 'lagerraum-box-check-konto-v1';
+const DEMO = { name: 'Julia Brandt', mail: 'julia.brandt@beispiel.ch', phone: '+49 7621 555 01 23', street: 'Musterstrasse 12', zip: '79576', city: 'Weil am Rhein', pay: 'card' };
+/* Zahlungsarten: nur vorgegebene Demo-Einträge zur Auswahl. Bewusst kein Feld für Karten- oder Kontonummern,
+   damit im Test niemand echte Zahlungsdaten eintippt. */
+const PAYS = [
+  { id: 'invoice', label: 'Rechnung per E-Mail', sub: 'Kein Zahlungsmittel hinterlegt' },
+  { id: 'card', label: 'Kreditkarte', sub: 'Endet auf 1234 (Demo)' },
+  { id: 'debit', label: 'Lastschrift', sub: 'Konto endet auf 5678 (Demo)' }
+];
+const payLabel = (id) => { const p = PAYS.find((x) => x.id === id) || PAYS[0]; return p.label + (p.id === 'invoice' ? '' : ' · ' + p.sub); };
+const payHtml = (cur) => '<div class="pays" role="group" aria-label="Zahlungsart">' + PAYS.map((p) => '<button type="button" class="chip" aria-pressed="' + (cur === p.id) + '" data-act="pay" data-id="' + p.id + '"><strong>' + p.label + '</strong><span>' + p.sub + '</span></button>').join('') + '</div>';
+let ACCOUNT = null;
+try {
+  const a = JSON.parse(localStorage.getItem(KEY_A) || 'null');
+  /* Nur ein Eintrag in der erwarteten Form zählt; alles andere wird ignoriert statt die App zu blockieren. */
+  if (a && typeof a === 'object' && typeof a.name === 'string' && typeof a.mail === 'string') {
+    ACCOUNT = Object.assign({}, DEMO);
+    Object.keys(DEMO).forEach((k) => { if (typeof a[k] === 'string') ACCOUNT[k] = a[k]; });
+    if (!PAYS.some((p) => p.id === ACCOUNT.pay)) ACCOUNT.pay = 'invoice';
+  }
+} catch (e) { ACCOUNT = null; }
+function saveAccount() { try { if (ACCOUNT) localStorage.setItem(KEY_A, JSON.stringify(ACCOUNT)); else localStorage.removeItem(KEY_A); } catch (e) { /* ohne Speicher gilt die Anmeldung bis zum Neuladen */ } }
+const initials = (n) => String(n).trim().split(/\s+/).map((w) => w[0] || '').join('').slice(0, 2).toUpperCase();
+const dateDe = (s) => { const d = String(s).split('-'); return d[2] + '.' + d[1] + '.' + d[0]; };
+let S = fresh();
+/* Simulation (nur mit ?test bedienbar): bleibt über "Neue Prüfung" hinweg erhalten. */
+const SIM = { apiErr: false, bookErr: false, delay: 500 };
+
+/* ---- API: hier den echten Endpunkt aus dem DevOps-Teil einsetzen. Ein Aufruf pro Box. ---- */
+function apiVolume(l, b, h) {
+  const call = new Promise((resolve, reject) => setTimeout(() => {
+    if (SIM.apiErr) reject(new Error('API nicht erreichbar'));
+    else resolve({ volume: Math.round(l * b * h * 1e6) / 1e6 });
+  }, SIM.delay));
+  /* Hängt die Verbindung, endet der Aufruf nach 8 s im selben Fehlerzustand wie ein API-Fehler. */
+  const timeout = new Promise((resolve, reject) => setTimeout(() => reject(new Error('Zeitüberschreitung')), 8000));
+  return Promise.race([call, timeout]);
+}
+const NO_NET = 'Keine Verbindung. Deine Eingaben sind gespeichert. Versuch es gleich nochmal.';
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function num(s, max, unit, example) {
+  const t = String(s).trim().replace(',', '.');
+  if (t === '') return { bad: 'Bitte ausfüllen' };
+  /* Nur einfache Dezimalzahlen: kein "1e2", kein "0x10". */
+  if (!/^-?\d+(\.\d+)?$/.test(t)) return { bad: 'Bitte eine Zahl eingeben, z. B. ' + example };
+  const n = Number(t);
+  if (n <= 0) return { bad: 'Muss grösser als 0 sein' };
+  /* Höchstens zwei Nachkommastellen (Zentimeter genau): so zeigt die Anzeige jede Eingabe exakt
+     und kann der Entscheidung nicht widersprechen. */
+  if (/\.\d{3,}$/.test(t)) return { bad: 'Höchstens zwei Nachkommastellen, z. B. ' + example };
+  if (n > max) return { bad: 'Höchstens ' + max + ' ' + unit };
+  return { n: n };
+}
+/* Obergrenzen 100 m und 500 m³ sind eigene Annahmen, bis die API-Dokumentation die echten Grenzen nennt. */
+const dimNum = (s) => num(s, 100, 'm', '2.5');
+const needNum = () => num(S.needStr, 500, 'm³', '14 oder 12.5');
+const f2 = (v) => v.toFixed(2).replace(/0$/, '');
+/* Anzeige darf der Entscheidung nie widersprechen: 13.996 wird nicht zu "14.0". */
+function fmtTotal(v, need) {
+  let s = f2(v);
+  if ((Number(s) >= need) !== (v >= need)) s = v.toFixed(3);
+  if ((Number(s) >= need) !== (v >= need)) s = 'knapp unter ' + f2(need);
+  return s;
+}
+function fmtDiff(a) {
+  if (a === 0) return '0.0';
+  for (let d = 1; d <= 3; d++) { const s = a.toFixed(d); if (Number(s) > 0) return s; }
+  return 'unter 0.001';
+}
+function boxBad(box) {
+  if (!box.mode) return 'Bitte eine Grösse wählen';
+  /* Jedes fehlerhafte Feld wird genannt, nicht nur das erste. */
+  return ['l', 'b', 'h'].filter((x) => dimNum(box[x]).bad).map((k) => LABELS[k] + ': ' + dimNum(box[k]).bad).join(' · ');
+}
+/* Plausibilität: gültig für die Fachregel, aber unüblich für eine Lagerbox. Warnt nur, blockiert nie.
+   Schwellen sind eigene Annahmen (nicht aus dem Steckbrief): Seite über 10 m oder unter 0.3 m, Höhe über 4 m. */
+function plaus(box) {
+  if (box.mode !== 'own') return '';
+  /* Roh lesen, damit auch Werte über der Obergrenze (z. B. 250 für 250 cm) den Meter-Hinweis schon beim Tippen bekommen. */
+  const raw = (s) => { const t = String(s).trim().replace(',', '.'); return /^\d+(\.\d+)?$/.test(t) && Number(t) > 0 ? Number(t) : undefined; };
+  const v = { l: raw(box.l), b: raw(box.b), h: raw(box.h) };
+  const ks = ['l', 'b', 'h'].filter((k) => v[k] !== undefined);
+  const big = ks.find((k) => v[k] > 10);
+  if (big) return LABELS[big] + ' ' + f2(v[big]) + ' m ist sehr gross für eine Lagerbox. Masse bitte in Metern, z. B. 2.5 statt 250.';
+  const small = ks.find((k) => v[k] < 0.3);
+  if (small) return LABELS[small] + ' ' + f2(v[small]) + ' m ist sehr klein für eine Lagerbox. Masse bitte in Metern, z. B. 0.8.';
+  if (v.h > 4) return 'Höhe ' + f2(v.h) + ' m ist ungewöhnlich hoch für eine Lagerbox. Bitte prüfen.';
+  return '';
+}
+const fromCat = (c) => ({ mode: c.id, l: c.l, b: c.b, h: c.h });
+const dims = (b) => esc(b.l) + ' × ' + esc(b.b) + ' × ' + esc(b.h) + ' m';
+const boxLabel = (b, i) => NAMES[i] + (b.mode && b.mode !== 'own' ? ' (' + b.mode + ')' : '') + ' · ' + dims(b);
+const ICON_OK = '<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
+const ICON_NO = '<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 8l8 8M16 8l-8 8"/></svg>';
+const ARROW = ''; /* Hauptaktionen tragen nur ihren Text */
+const MINUS = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+const PLUS = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+
+/* Vorschlag: kleinste Katalog-Auswahl (1 oder 2 Boxen) mit Reserve ausserhalb der Knappzone. */
+function recommend(need) {
+  const opts = [];
+  const rec = (start, cur) => {
+    if (cur.length) opts.push(cur.slice());
+    if (cur.length === MAX_BOXES) return;
+    for (let i = start; i < CATALOG.length; i++) { cur.push(CATALOG[i]); rec(i, cur); cur.pop(); }
+  };
+  rec(0, []);
+  const sum = (o) => Math.round(o.reduce((s, c) => s + c.vol, 0) * 1e6) / 1e6;
+  const pick = (min) => opts.filter((o) => sum(o) >= min).sort((x, y) => x.length - y.length || sum(x) - sum(y))[0]; /* zuerst möglichst wenige Boxen, dann möglichst wenig Volumen */
+  const o = pick(need + ZONE + 1e-9) || pick(need);
+  return o ? { boxes: o.slice().sort((x, y) => y.vol - x.vol), total: sum(o) } : null;
+}
+function recoHtml() {
+  const n = needNum();
+  if (n.bad) return '';
+  const r = recommend(n.n);
+  if (!r) return '<span>Für ' + f2(n.n) + ' m³ reicht keine Standardkombination. Gib eigene Masse ein.</span>';
+  const same = S.boxes.length === r.boxes.length && r.boxes.every((c, i) => S.boxes[i].mode === c.id);
+  if (same) return '';
+  const res = Math.round((r.total - n.n) * 1e6) / 1e6;
+  return '<span><span class="small">Vorschlag mit Reserve</span><br><strong>' + r.boxes.map((c) => sizeName(c.id)).join(' + ') + ', ' + f2(r.total) + ' m³</strong><br><span class="small">' + f2(res) + ' m³ mehr als dein Bedarf</span></span>' +
+    '<button type="button" class="link" data-act="reco">Übernehmen</button>';
+}
+
+/* "Ist 14 viel?": Bedarf in Umzugskartons übersetzen (1 Karton ≈ 0.08 m³). */
+function needHint() { return needNum().bad ? '' : 'Zum Vergleich: Ein Umzugskarton fasst etwa 0.08 m³, Möbel kommen dazu.'; }
+/* Kalendereintrag der Reservierung als .ics-Datei (ganztägig am Einlagerungstag). */
+function downloadIcs() {
+  const d = S.form.date.replace(/-/g, '');
+  /* Mit Enddatum deckt der Eintrag den ganzen Zeitraum ab (DTEND ist bei ganztägigen Terminen exklusiv). */
+  const next = new Date((S.form.until || S.form.date) + 'T00:00:00Z'); next.setUTCDate(next.getUTCDate() + 1);
+  const d2 = next.toISOString().slice(0, 10).replace(/-/g, '');
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lagerraum Box-Check Prototyp//DE', 'BEGIN:VEVENT',
+    'UID:' + S.resNo + '@lagerraum-prototyp', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+    'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + d2,
+    'SUMMARY:Einlagern Lagerraum (' + S.resNo + ')',
+    'DESCRIPTION:' + S.boxes.map((b, i) => NAMES[i] + ' ' + ['l', 'b', 'h'].map((k) => dimNum(b[k]).n).join(' x ') + ' m').join('\\, ') + '. Prototyp\\, keine echte Buchung.',
+    'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = 'lagerraum-' + S.resNo + '.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('Kalenderdatei gespeichert.');
+}
+/* App-Rahmen: Startbereiche zeigen die Marke, tiefere Screens Zurück-Pfeil und Titel; unten drei Bereiche. */
+function renderSteps() {
+  const deep = S.step === 2 || S.step === 3 || (S.step === 1 && S.editing && BOOKING);
+  const title = S.step === 1 ? 'Boxen ändern' : (S.step === 2 ? 'Ergebnis' : (S.editForm ? 'Reservierung ändern' : 'Reservieren'));
+  document.getElementById('back').hidden = !deep;
+  document.getElementById('mark').hidden = deep;
+  document.getElementById('proto').hidden = deep;
+  const t = document.getElementById('title'); t.hidden = !deep; t.textContent = deep ? title : '';
+  document.getElementById('acct-nm').textContent = ACCOUNT ? ACCOUNT.name.trim().split(/\s+/)[0] : 'Anmelden';
+  document.getElementById('acct').setAttribute('aria-label', ACCOUNT ? 'Konto von ' + ACCOUNT.name : 'Anmelden');
+  const inBooking = S.step === 4 || S.editing || S.editForm;
+  const cur = S.step === 5 ? 'acct' : (inBooking ? 'tab-booking' : 'tab-check');
+  ['tab-check', 'tab-booking', 'acct'].forEach((id) => { const b = document.getElementById(id); if (id === cur) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+}
+let toastTimer = 0;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+/* Box massstäblich in Isometrie, daneben eine Person (1.75 m): Grösse sehen statt Kubikmeter lesen.
+   Alle Zeichnungen teilen denselben Massstab und Ausschnitt, damit S bis XL vergleichbar bleiben. */
+function isoBox(l, b, h) {
+  const s = 17, c = 0.866;
+  const P = (x, y, z) => ((x - y) * c * s).toFixed(1) + ',' + ((x + y) * 0.5 * s - z * s).toFixed(1);
+  const poly = (pts, fill) => '<polygon points="' + pts.join(' ') + '" fill="' + fill + '"/>';
+  let slats = '';
+  for (let z = 0.3; z < h - 0.05; z += 0.3) slats += '<path d="M' + P(0, b, z).replace(',', ' ') + 'L' + P(l, b, z).replace(',', ' ') + '" stroke="#fff" stroke-opacity=".4" stroke-width="1"/>';
+  const fx = (3.0 + 0.55 - 0.0) * c * s, fy = (3.0 + 0.55) * 0.5 * s; /* Person steht immer an derselben Stelle rechts vorn */
+  const person = '<g fill="#171B20" fill-opacity=".8"><circle cx="' + (fx + 14).toFixed(1) + '" cy="' + (fy - 1.62 * s + 2).toFixed(1) + '" r="2.4"/><rect x="' + (fx + 11.2).toFixed(1) + '" y="' + (fy - 1.45 * s + 2).toFixed(1) + '" width="5.6" height="' + (1.45 * s).toFixed(1) + '" rx="2.4"/></g>';
+  return '<svg aria-hidden="true" viewBox="-40 -44 116 96" preserveAspectRatio="xMidYMax meet">' +
+    poly([P(0, 0, h), P(l, 0, h), P(l, b, h), P(0, b, h)], '#C7D6E8') +
+    poly([P(0, b, 0), P(l, b, 0), P(l, b, h), P(0, b, h)], '#1F4E8C') + slats +
+    poly([P(l, 0, 0), P(l, b, 0), P(l, b, h), P(l, 0, h)], '#163A69') + person + '</svg>';
+}
+
+function view1() {
+  const nb = S.showErr ? needNum().bad : '';
+  const boxes = S.boxes.map((b, i) => {
+    const chips = CATALOG.map((c) => '<button type="button" class="chip" aria-pressed="' + (b.mode === c.id) + '" data-act="size" data-i="' + i + '" data-id="' + c.id + '">' + isoBox(Number(c.l), Number(c.b), Number(c.h)) + '<b>' + sizeName(c.id) + '</b><strong>' + f2(c.vol) + ' m³</strong><span>' + c.l + ' × ' + c.b + ' × ' + c.h + ' m</span></button>').join('') +
+      '<button type="button" class="chip wide" aria-pressed="' + (b.mode === 'own') + '" data-act="own" data-i="' + i + '">Eigene Masse eingeben</button>';
+    const field = (k) => '<label>' + LABELS[k] + ' (m)<input type="text" inputmode="decimal" autocomplete="off" maxlength="8" aria-describedby="err' + i + ' warn' + i + '" data-i="' + i + '" data-k="' + k + '" value="' + esc(b[k]) + '"' + (S.showErr && dimNum(b[k]).bad ? ' class="bad" aria-invalid="true"' : '') + '></label>';
+    return '<section class="card" aria-label="' + NAMES[i] + '">' +
+      '<div class="row"><h2>' + NAMES[i] + '</h2>' + (S.boxes.length > 1 ? '<button type="button" class="link" data-act="remove" data-i="' + i + '">Entfernen</button>' : '') + '</div>' +
+      '<div class="chips">' + chips + '</div>' +
+      (b.mode === 'own' ? '<div class="dims">' + field('l') + field('b') + field('h') + '</div><p class="hintwarn" role="status" id="warn' + i + '">' + esc(plaus(b)) + '</p>' : '') +
+      '<p class="err" role="alert" id="err' + i + '">' + (S.showErr ? esc(boxBad(b)) : '') + '</p></section>';
+  }).join('');
+  return '<main>' +
+    '<h1 tabindex="-1">Passt dein Hausrat in die Box?</h1>' +
+    /* Drei Ebenen: Statuszeile (grau), Reservierung (dunkel), Vorschlag (gelb). */
+    (UNDO && !BOOKING ? '<div class="reco info" role="status"><span>Reservierung ' + esc(UNDO.resNo) + ' storniert.</span><span class="pair"><button type="button" class="link" data-act="undoCancel">Rückgängig</button><button type="button" class="link" data-act="hideUndo" aria-label="Hinweis zur stornierten Reservierung ausblenden">Ausblenden</button></span></div>' : '') +
+    (FLASH ? '<div class="reco info" role="status"><span>' + esc(FLASH) + '</span></div>' : '') +
+    (S.restored ? '<div class="reco info"><span>Deine letzte Eingabe ist noch da.</span><button type="button" class="link" data-act="reset">Neu beginnen</button></div>' : '') +
+    (BOOKING && S.editing ? '<div class="reco res"><span><span class="small">Du änderst die Boxen der Reservierung</span><br><strong>' + esc(BOOKING.resNo) + '</strong></span><button type="button" class="link" data-act="openBooking">Abbrechen</button></div>'
+      : (BOOKING ? '<div class="reco res"><span><span class="small">Deine Reservierung</span><br><strong>' + esc(BOOKING.resNo) + ' · ab ' + esc(dateDe(BOOKING.form.date)) + '</strong></span><button type="button" class="link" data-act="openBooking">Ansehen</button></div>' : '')) +
+    '<section class="card"><label for="need" style="font-size:15px;color:var(--ink)">Dein Platzbedarf (geschätzt)</label>' +
+    '<div class="needrow"><input id="need" type="text" inputmode="decimal" autocomplete="off" maxlength="8" aria-describedby="needErr needHint" data-need="1" value="' + esc(S.needStr) + '"' + (nb ? ' class="bad" aria-invalid="true"' : '') + '><span class="unit">m³</span>' +
+    '<button type="button" class="sq" data-act="need-" aria-label="Platzbedarf um 0.5 Kubikmeter verkleinern">' + MINUS + '</button>' +
+    '<button type="button" class="sq" data-act="need+" aria-label="Platzbedarf um 0.5 Kubikmeter vergrössern">' + PLUS + '</button></div>' +
+    '<p class="err" role="alert" id="needErr">' + esc(nb || '') + '</p><p class="small" id="needHint">' + needHint() + '</p></section>' +
+    '<div class="reco" id="reco">' + recoHtml() + '</div>' +
+    boxes +
+    (S.boxes.length < MAX_BOXES ? '<button type="button" class="ghost" data-act="add">+ Weitere Box kombinieren</button>' : '<p class="lead" style="font-size:14px">Mehr als ' + MAX_BOXES + ' Boxen lassen sich online nicht kombinieren.</p>') +
+    '<p class="lead" style="font-size:14px">Geprüft wird das Volumen, nicht die Form deiner Möbel.</p>' +
+    '</main><div class="actions">' +
+    (S.apiErr ? '<p class="alert" role="alert">' + NO_NET + '</p>' : '') +
+    '<p class="small" id="pickSum">' + pickSum() + '</p>' +
+    '<button type="button" class="btn" data-act="check"' + (S.busy || nothingPicked() ? ' disabled' : '') + '><span>' + (S.busy ? 'Wird geprüft …' : (nothingPicked() ? 'Zuerst eine Grösse wählen' : (S.apiErr ? 'Nochmal prüfen' : 'Prüfen, ob es passt'))) + '</span>' + ARROW + '</button></div>';
+}
+const nothingPicked = () => S.boxes.every((b) => !b.mode);
+/* Zwischensumme vor dem Prüfen, nur aus Katalogwerten. Eigene Masse rechnet erst die API. */
+function pickSum() {
+  const picked = S.boxes.filter((b) => b.mode);
+  if (!picked.length) return '';
+  if (picked.some((b) => b.mode === 'own')) return picked.length + (picked.length === 1 ? ' Box' : ' Boxen') + ' gewählt, Volumen nach dem Prüfen';
+  const sum = Math.round(picked.reduce((a, b) => a + CATALOG.find((c) => c.id === b.mode).vol, 0) * 1e6) / 1e6;
+  return 'Gewählt: ' + f2(sum) + ' m³ laut Katalog' + (needNum().bad ? '' : ' · Bedarf ' + f2(needNum().n) + ' m³');
+}
+
+function texts(r) {
+  const d = fmtDiff(Math.abs(r.diff)) + ' m³', need = f2(r.need) + ' m³';
+  let cls, head, sub;
+  /* Persona denkt in Umzugskartons: 1 Karton ≈ 0.08 m³ (60 × 40 × 34 cm), nur als Übersetzungshilfe. */
+  const k = Math.abs(r.diff) / 0.08;
+  const kartons = k < 1 ? 'weniger als 1 Umzugskarton' : 'etwa ' + Math.round(k) + ' Umzugskarton' + (Math.round(k) === 1 ? '' : 's');
+  if (r.fits && !r.knapp) { cls = 'ok'; head = 'Passt'; sub = 'Dein Hausrat hat Platz, mit ' + d + ' Reserve.'; }
+  else if (r.fits) { cls = 'warn'; head = 'Passt, aber knapp'; sub = r.diff === 0 ? 'Genau auf der Grenze: keine Reserve.' : 'Rechnerisch reicht es, die Reserve ist nur ' + d + '.'; }
+  /* Jedes "passt nicht" ist rot mit Kreuz, auch das knappe: Gelb bleibt allein für "passt, aber knapp". */
+  else if (r.knapp) { cls = 'no'; head = 'Passt nicht, knapp'; sub = 'Es fehlen ' + d + ', ' + kartons + '.'; }
+  else { cls = 'no'; head = 'Passt nicht'; sub = 'Es fehlen ' + d + ', ' + kartons + '.'; }
+  const bulky = ' Sperrige Stücke wie Sessel oder Fahrrad brauchen oft mehr Platz, als ihr Volumen zeigt.';
+  const knapp = r.fits
+    ? 'Deine ' + need + ' sind geschätzt. ' + (r.diff === 0 ? 'Schon etwas mehr Hausrat als geschätzt' : 'Mehr als ' + d + ' zusätzlicher Hausrat') + ' passt nicht mehr hinein.' + bulky + ' Miss nach oder nimm eine Grösse grösser.'
+    : 'Entscheidend ist der exakte Wert: ' + fmtTotal(r.total, r.need) + ' m³ liegt unter ' + need + '. Vielleicht lohnt sich Nachmessen, sonst brauchst du mehr Platz.';
+  return { d: d, cls: cls, head: head, sub: sub, knapp: knapp };
+}
+
+/* Konkrete Auswege bei "passt nicht": mit einem Tipp übernehmen und neu prüfen. */
+function fixes(r) {
+  /* Kandidaten: eine Box dazunehmen, eine Box vergrössern, oder der Katalog-Vorschlag.
+     Hauptaktion = kleinste Lösung mit Reserve ausserhalb der Knappzone, Nebenaktion = kleinste knappe Lösung. */
+  const c = [], n = S.boxes.length;
+  const copy = () => S.boxes.map((b) => Object.assign({}, b));
+  const rnd = (x) => Math.round(x * 1e6) / 1e6;
+  if (n < MAX_BOXES) CATALOG.forEach((x) => c.push({ label: sizeName(x.id) + ' dazunehmen', total: rnd(r.total + x.vol), n: n + 1, boxes: copy().concat([fromCat(x)]) }));
+  S.boxes.forEach((b, k) => CATALOG.forEach((x) => {
+    if (x.vol <= r.vols[k]) return;
+    const bs = copy(); bs[k] = fromCat(x);
+    c.push({ label: n === 1 ? 'Stattdessen ' + sizeName(x.id) + ' nehmen' : NAMES[k] + ' durch ' + sizeName(x.id) + ' ersetzen', total: rnd(r.total - r.vols[k] + x.vol), n: n, boxes: bs });
+  }));
+  const rec = recommend(r.need);
+  if (rec && n > 1) c.push({ label: 'Stattdessen nur ' + rec.boxes.map((x) => sizeName(x.id)).join(' + '), total: rec.total, n: rec.boxes.length, boxes: rec.boxes.map(fromCat) });
+  /* Reihenfolge: kleinste ausreichende Lösung zuerst (kein Drängen zur grossen Box), dann die kleinste mit Reserve. */
+  const ok = c.filter((x) => x.total >= r.need).sort((a, b) => a.total - b.total || a.n - b.n);
+  const safe = ok.filter((x) => x.total > r.need + ZONE).sort((a, b) => a.n - b.n || a.total - b.total)[0], first = ok[0];
+  const out = [];
+  if (first) out.push(first);
+  if (safe && safe !== first) out.push(safe);
+  const reserve = (x) => { const d = rnd(x.total - r.need); return f2(x.total) + ' m³, ' + (d === 0 ? 'keine Reserve' : f2(d) + ' m³ Reserve') + (d <= ZONE ? ' (knapp)' : ''); };
+  return out.map((x) => ({ label: x.label, sub: reserve(x), boxes: x.boxes }));
+}
+
+function viz(r) {
+  const max = Math.ceil(Math.max(r.need * 1.4, r.total * 1.15));
+  const pct = (x) => Math.max(0, Math.min(100, (x / max) * 100)).toFixed(2) + '%';
+  const lo = Math.max(0, Math.round((r.need - ZONE) * 1e6) / 1e6);
+  const segs = r.vols.map((v, i) => '<div class="seg" style="width:' + pct(v) + ';background:' + COLORS[i] + '">' + NAMES[i].slice(-1) + '</div>').join('');
+  return '<div class="viz" role="img" aria-label="Gewählter Platz ' + fmtTotal(r.total, r.need) + ' Kubikmeter, benötigt ' + f2(r.need) + ' Kubikmeter">' +
+    '<span class="lbl" style="left:clamp(38px,' + pct(r.need) + ',calc(100% - 38px))">Bedarf ' + f2(r.need) + '</span><div class="bar">' + segs + '</div>' +
+    '<div class="band" style="left:' + pct(lo) + ';width:' + pct(r.need + ZONE - lo) + '"></div><div class="mark" style="left:' + pct(r.need) + '"></div>' +
+    '<span class="ax" style="left:0">0</span><span class="ax" style="right:0">' + max + ' m³</span></div>' +
+    '<div class="legend"><i></i>Knappzone ' + f2(lo) + ' bis ' + f2(r.need + ZONE) + ' m³: hier entscheidet deine Messgenauigkeit</div>';
+}
+
+function table(r, t) {
+  /* Bei nur einer Box ist ihre Zeile die Summe: dann gilt dieselbe Anzeige-Regel wie für "Zusammen". */
+  let rows = S.boxes.map((b, i) => '<tr><td>' + boxLabel(b, i) + '</td><td>' + (S.boxes.length === 1 ? fmtTotal(r.vols[i], r.need) : f2(r.vols[i])) + ' m³</td></tr>').join('');
+  if (S.boxes.length > 1) rows += '<tr class="sum"><td>Zusammen</td><td>' + fmtTotal(r.total, r.need) + ' m³</td></tr>';
+  rows += '<tr><td>Dein Bedarf (geschätzt)</td><td>' + f2(r.need) + ' m³</td></tr>';
+  rows += '<tr class="diff"><td>' + (r.fits ? 'Reserve' : 'Es fehlen') + '</td><td>' + t.d + '</td></tr>';
+  return '<section class="card" style="padding:6px 0"><table>' + rows + '</table></section>';
+}
+
+function view2() {
+  const r = S.res, t = texts(r);
+  const resLabel = S.editing ? 'Änderung übernehmen' : (r.knapp ? 'Trotzdem reservieren' : (S.boxes.length > 1 ? 'Boxen reservieren' : 'Box reservieren'));
+  /* Aktionsleiste: höchstens eine Haupt- und eine Nebenaktion. Alternativen stehen als Karte auf der Seite. */
+  const discard = S.editing ? '<button type="button" class="btn2" data-act="openBooking">Änderung verwerfen</button>' : '';
+  const change = '<button type="button" class="btn2" data-act="back">Auswahl ändern</button>';
+  let actions, changeInBar = true;
+  if (r.fits && r.odd.length) {
+    actions = '<button type="button" class="btn" data-act="back"><span>Masse prüfen</span>' + ARROW + '</button>' +
+      '<button type="button" class="btn2" data-act="toReserve">Masse stimmen, ' + (S.editing ? 'Änderung übernehmen' : 'trotzdem reservieren') + '</button>';
+  } else if (r.fits) {
+    actions = '<button type="button" class="btn" data-act="toReserve"><span>' + resLabel + '</span>' + ARROW + '</button>' + (discard || change);
+    changeInBar = !discard;
+  } else {
+    actions = '<button type="button" class="btn" data-act="back"><span>Auswahl ändern</span>' + ARROW + '</button>' + discard;
+  }
+  /* Auswege: bei "passt nicht" alle, bei "passt, aber knapp" nur die mit Reserve ausserhalb der Knappzone. */
+  S.fx = (!r.fits || r.knapp) ? fixes(r).filter((f) => !r.fits || !/\(knapp\)/.test(f.sub)) : [];
+  const fixCard = S.fx.length
+    ? '<section class="card"><h2>' + (r.fits ? 'Mehr Reserve' : 'So könnte es passen') + '</h2>' +
+      S.fx.map((f, i) => '<button type="button" class="btn2" data-act="fix" data-j="' + i + '">' + f.label + '<small>' + f.sub + '</small></button>').join('') + '</section>'
+    : (!r.fits ? '<section class="card"><h2>So könnte es passen</h2><p>Keine Standardkombination reicht für diesen Bedarf. Gib eigene Masse ein.</p></section>' : '');
+  const knappNote = r.knapp ? '<section class="note"><strong>Knappes Ergebnis.</strong> ' + t.knapp + '</section>' : '';
+  return '<main>' +
+    '<section class="hero ' + t.cls + '" aria-live="polite"><div class="v">' + (r.fits ? ICON_OK : ICON_NO) + '<h1 tabindex="-1" style="font-size:28px">' + t.head + '</h1></div><p>' + t.sub + '</p></section>' +
+    (r.fits ? knappNote + fixCard : fixCard + knappNote) +
+    '<section class="card">' + viz(r) + '</section>' +
+    table(r, t) +
+    '<section class="card" style="border-bottom:0;padding-bottom:0"><button type="button" class="btn2" data-act="share">Ergebnis teilen</button></section>' +
+    (changeInBar ? '' : change) +
+    (r.odd.length ? '<section class="note"><strong>Ungewöhnliche Masse.</strong> ' + r.odd.map(esc).join(' ') + '</section>' : '') +
+    (r.fits && r.over && !r.odd.length ? '<section class="note"><strong>Deutlich mehr Platz als nötig.</strong> Du würdest ' + t.d + ' ungenutzt mieten. Für ' + f2(r.need) + ' m³ reicht ' + r.over.boxes.map((c) => sizeName(c.id)).join(' + ') + ' mit ' + f2(r.over.total) + ' m³.' +
+      '<button type="button" class="btn2" data-act="recoFix" style="margin-top:10px">Kleinere Auswahl prüfen</button></section>' : '') +
+    '</main><div class="actions">' + (S.apiErr ? '<p class="alert" role="alert">' + NO_NET + ' Deine bisherige Auswahl ist unverändert.</p>' : '') + actions + '</div>';
+}
+
+/* Heutiges Datum in Ortszeit (nicht UTC), damit "heute" kurz nach Mitternacht stimmt. */
+function todayLocal() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+const FORM_LABELS = { date: 'Einlagern ab', until: 'Einlagern bis', name: 'Name', mail: 'E-Mail' };
+function formBad() {
+  const f = S.form, today = todayLocal();
+  /* Beim Ändern einer Reservierung darf das unveränderte, inzwischen vergangene Startdatum stehen bleiben. */
+  const keptDate = S.editForm && BOOKING && f.date === BOOKING.form.date;
+  return {
+    date: !f.date ? 'Bitte ein Datum wählen' : (f.date < today && !keptDate ? 'Das Datum liegt in der Vergangenheit' : ''),
+    until: f.until && f.date && f.until < f.date ? 'Das Ende liegt vor dem Beginn' : '',
+    name: f.name.trim().length < 2 ? 'Bitte deinen Namen eingeben' : '',
+    mail: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.mail.trim()) ? 'Bitte eine gültige E-Mail-Adresse eingeben, z. B. name@beispiel.ch' : ''
+  };
+}
+function view3() {
+  const r = S.res, bad = S.formErr ? formBad() : { date: '', until: '', name: '', mail: '' };
+  const today = todayLocal();
+  const missing = Object.keys(FORM_LABELS).filter((k) => bad[k]).map((k) => FORM_LABELS[k]);
+  /* Fehlermeldung steht ausserhalb des Labels und ist per aria-describedby mit dem Feld verbunden. */
+  const fld = (k, label, type, extra) => '<div class="fl"><label for="f-' + k + '">' + label + '</label><input id="f-' + k + '" type="' + type + '" data-f="' + k + '" value="' + esc(S.form[k]) + '" aria-describedby="ferr-' + k + '" ' + extra + (bad[k] ? ' class="bad" aria-invalid="true"' : '') + '><span class="err" id="ferr-' + k + '">' + bad[k] + '</span></div>';
+  return '<main>' +
+    '<h1 tabindex="-1">' + (S.editForm ? 'Reservierung ändern' : 'Reservierung abschliessen') + '</h1>' +
+    (BOOKING && !S.editForm ? '<section class="note">Du hast bereits die Reservierung ' + esc(BOOKING.resNo) + '. Sie wird durch diese neue Reservierung ersetzt.</section>' : '') +
+    '<section class="card"><span class="small">Deine Auswahl</span>' + S.boxes.map((b, i) => '<p>' + boxLabel(b, i) + '</p>').join('') +
+    '<p><strong>' + fmtTotal(r.total, r.need) + ' m³ für ' + f2(r.need) + ' m³ Bedarf</strong></p></section>' +
+    '<section class="card">' +
+    '<h2>Zeitraum</h2>' +
+    fld('date', 'Einlagern ab', 'date', 'min="' + today + '"') +
+    fld('until', 'Einlagern bis (optional)', 'date', 'min="' + esc(S.form.date || today) + '"') +
+    '</section><section class="card"><h2>Kontakt</h2>' +
+    (ACCOUNT ? '<p class="small">Aus deinem Konto übernommen, hier änderbar.</p>' : '') +
+    fld('name', 'Vor- und Nachname', 'text', 'autocomplete="name" maxlength="60"') +
+    fld('mail', 'E-Mail für die Bestätigung', 'email', 'autocomplete="email" inputmode="email" maxlength="80"') +
+    '</section><section class="card"><h2>Zahlungsart</h2><p class="small">Vorausgewählt, du musst nichts ändern. Bezahlt wird erst bei Mietbeginn <span class="ex">Beispielregel</span></p>' + payHtml(S.form.pay) + '</section>' +
+    '<p class="lead">Die Reservierung ist kostenlos und unverbindlich <span class="ex">Beispielregel</span></p>' +
+    '<p class="lead">Prototyp: Es wird nichts gebucht, bitte keine echten Zahlungsdaten verwenden.</p>' +
+    '</main><div class="actions">' +
+    (missing.length ? '<p class="alert" role="alert">Bitte prüfen: ' + missing.join(', ') + '</p>' : '') +
+    (S.bookErr ? '<p class="alert" role="alert">Keine Verbindung: Die Reservierung wurde nicht gesendet. Deine Angaben sind noch da.</p>' : '') +
+    '<button type="button" class="btn" data-act="reserve"' + (S.bookBusy ? ' disabled' : '') + '><span>' + (S.bookBusy ? 'Reservierung wird gesendet …' : (S.bookErr ? 'Nochmal senden' : (S.editForm ? 'Änderungen speichern' : 'Jetzt reservieren'))) + '</span>' + ARROW + '</button>' +
+    '<button type="button" class="btn2" data-act="' + (S.editForm ? 'openBooking' : 'toResult') + '"' + (S.bookBusy ? ' disabled' : '') + '>' + (S.editForm ? 'Abbrechen' : 'Zurück zum Ergebnis') + '</button></div>';
+}
+function view4() {
+  if (!BOOKING || !S.res) {
+    return '<main><h1 tabindex="-1">Reservierung</h1><div class="empty">' + isoBox(2.0, 2.0, 2.5) +
+      '<p>Du hast noch nichts reserviert. Prüfe zuerst, welche Box für deinen Hausrat reicht.</p></div>' +
+      (UNDO ? '<div class="reco info" role="status"><span>Reservierung ' + esc(UNDO.resNo) + ' storniert.</span><span class="pair"><button type="button" class="link" data-act="undoCancel">Rückgängig</button></span></div>' : '') +
+      '</main><div class="actions"><button type="button" class="btn" data-act="back"><span>Box prüfen</span></button></div>';
+  }
+  const r = S.res, t = texts(r);
+  const sheet = S.confirmCancel
+    ? '<div class="scrim" data-act="cancelNo"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h"><h2 id="sheet-h">Reservierung stornieren?</h2>' +
+      '<p>' + esc(S.resNo) + ', ' + esc(period(S.form)) + '. Du kannst das danach rückgängig machen.</p>' +
+      '<button type="button" class="btn" data-act="cancelNo"><span>Nein, behalten</span></button>' +
+      '<button type="button" class="btn2" data-act="cancelYes" style="color:var(--no)">Ja, stornieren</button></div>'
+    : '';
+  return sheet + '<main>' +
+    (FLASH ? '<div class="reco info" role="status"><span>' + esc(FLASH) + '</span></div>' : '') +
+    '<section class="hero ok"><div class="v">' + ICON_OK + '<h1 tabindex="-1" style="font-size:26px">Reserviert</h1></div>' +
+    '<p>' + esc(period(S.form).replace(/^ab/, 'Ab')) + ' für ' + esc(S.form.name.trim()) + '. Die Bestätigung geht an ' + esc(S.form.mail.trim()) + ' <span class="ex">im Prototyp ohne Versand</span></p></section>' +
+    '<section class="card"><span class="small">Reservierungsnummer <span class="ex">Beispiel</span></span><p style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">' + esc(S.resNo || '') + '</p>' +
+    '<p><span class="small">Zahlungsart</span><br>' + esc(payLabel(S.form.pay)) + '</p>' +
+    '<p class="lead">Wir halten die Auswahl 7 Tage für dich frei. Bring die Nummer zur Schlüsselübergabe mit. <span class="ex">Beispielregel</span></p></section>' +
+    table(r, t) +
+    (r.knapp ? '<section class="note"><strong>Denk daran:</strong> Die Reserve ist knapp. Miss deinen Hausrat vor dem Einlagern noch einmal nach.</section>' : '') +
+    '<section class="card"><h2>Reservierung</h2>' +
+    '<button type="button" class="btn2" data-act="shareBooking">Reservierung teilen</button>' +
+    '<button type="button" class="btn2" data-act="editForm">Zeitraum oder Kontakt ändern</button>' +
+    '<button type="button" class="btn2" data-act="editBoxes">Boxen ändern</button></section>' +
+    '<button type="button" class="quiet" data-act="reset" style="color:var(--ink)">Neue Prüfung starten</button>' +
+    '<button type="button" class="quiet" data-act="cancelAsk">Reservierung stornieren</button>' +
+    '<p class="lead">Prototyp: Es wurde nichts gebucht. Die Reservierung ist nur auf diesem Gerät gespeichert.</p>' +
+    '</main><div class="actions">' +
+    '<button type="button" class="btn" data-act="ics"><span>Termin in Kalender speichern</span></button></div>';
+}
+
+function view5() {
+  const back = '<button type="button" class="btn2" data-act="closeAccount">Zurück zum Box-Check</button>';
+  if (!ACCOUNT) {
+    return '<main><h1 tabindex="-1">Anmelden</h1>' +
+      '<p class="lead">Mit Konto sind deine Angaben bei der Reservierung schon ausgefüllt. Du kannst auch ohne Konto prüfen und reservieren.</p>' +
+      '<section class="card"><span class="small">Demo-Konto</span><p><strong>' + DEMO.name + '</strong><br>' + DEMO.mail + '</p>' +
+      '<p class="lead" style="font-size:14px">Prototyp: Anmeldung ohne Passwort, mit erfundenen Angaben.</p></section>' +
+      '</main><div class="actions"><button type="button" class="btn" data-act="login"><span>Als Julia Brandt anmelden</span>' + ARROW + '</button>' + back + '</div>';
+  }
+  const p = S.profile || ACCOUNT;
+  const pb = S.profileErr ? profileBad(p) : {};
+  const fld = (k, label, type, extra) => '<div class="fl"><label for="p-' + k + '">' + label + '</label><input id="p-' + k + '" type="' + type + '" data-p="' + k + '" value="' + esc(p[k]) + '" maxlength="80" aria-describedby="perr-' + k + '" ' + extra + (pb[k] ? ' class="bad" aria-invalid="true"' : '') + '><span class="err" id="perr-' + k + '">' + (pb[k] || '') + '</span></div>';
+  return '<main><h1 tabindex="-1">Mein Konto</h1>' +
+    '<section class="card"><div class="who"><span class="big" aria-hidden="true">' + esc(initials(ACCOUNT.name)) + '</span>' +
+    '<div><strong style="font-size:18px">' + esc(ACCOUNT.name) + '</strong><br><span class="lead" style="font-size:14px">' + esc(ACCOUNT.mail) + '</span><br><span class="tag">Demo-Konto</span></div></div></section>' +
+    '<section class="card"><h2>Meine Reservierung</h2>' +
+    (BOOKING ? '<p><strong>' + esc(BOOKING.resNo) + '</strong> · ' + esc(period(BOOKING.form)) + '<br>' + BOOKING.boxes.map((b, i) => boxLabel(b, i)).join('<br>') + '</p><button type="button" class="btn2" data-act="openBooking">Ansehen und ändern</button>'
+      : '<p class="lead">Noch keine Reservierung.</p><button type="button" class="btn2" data-act="closeAccount">Box prüfen und reservieren</button>') + '</section>' +
+    '<section class="card"><h2>Kontakt</h2>' +
+    fld('name', 'Vor- und Nachname', 'text', 'autocomplete="name"') +
+    fld('mail', 'E-Mail', 'email', 'autocomplete="email" inputmode="email"') +
+    fld('phone', 'Telefon', 'tel', 'autocomplete="tel" inputmode="tel"') + '</section>' +
+    '<section class="card"><h2>Adresse</h2>' +
+    fld('street', 'Strasse und Nummer', 'text', 'autocomplete="address-line1"') +
+    '<div class="two">' + fld('zip', 'PLZ', 'text', 'autocomplete="postal-code" inputmode="numeric"') + fld('city', 'Ort', 'text', 'autocomplete="address-level2"') + '</div></section>' +
+    '<section class="card"><h2>Zahlungsart</h2><p class="small">Wird bei der Reservierung vorgeschlagen. Bezahlt wird erst bei Mietbeginn <span class="ex">Beispielregel</span></p>' + payHtml(p.pay) +
+    '<p class="lead" style="font-size:14px">Prototyp: nur Demo-Einträge, bitte keine echten Zahlungsdaten verwenden.</p></section>' +
+    '<button type="button" class="quiet" data-act="logout">Abmelden</button>' +
+    '<p class="lead" style="font-size:14px">Prototyp: erfundene Angaben, nur auf diesem Gerät gespeichert.</p>' +
+    '</main><div class="actions">' + (FLASH ? '<p class="saved" role="status">' + esc(FLASH) + '</p>' : '') +
+    '<button type="button" class="btn" data-act="saveProfile"><span>Änderungen speichern</span></button>' + back + '</div>';
+}
+function profileBad(p) {
+  return {
+    name: String(p.name).trim().length < 2 ? 'Bitte deinen Namen eingeben' : '',
+    mail: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(p.mail).trim()) ? 'Bitte eine gültige E-Mail-Adresse eingeben' : ''
+  };
+}
+/* Eingaben überstehen Neuladen und Unterbrechungen (nur Bedarf und Boxen, keine Personendaten). */
+const KEY = 'lagerraum-box-check-v1';
+/* Vom Reservierungsformular bleiben Zeitraum und Zahlungsart erhalten; Name und E-Mail werden bewusst nicht gespeichert. */
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ needStr: S.needStr, boxes: S.boxes, draft: { date: S.form.date, until: S.form.until, pay: S.form.pay } })); } catch (e) { /* ohne Speicher läuft die App normal weiter */ } }
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!d || !Array.isArray(d.boxes) || !d.boxes.length || d.boxes.length > MAX_BOXES) return;
+    S.needStr = String(d.needStr || DEFAULT_NEED);
+    S.boxes = d.boxes.map((b) => ({ mode: b.mode || null, l: String(b.l || ''), b: String(b.b || ''), h: String(b.h || '') }));
+    S.restored = S.boxes.some((b) => b.mode) || S.needStr !== DEFAULT_NEED;
+    if (d.draft) Object.assign(S.form, { date: String(d.draft.date || ''), until: String(d.draft.until || ''), pay: PAYS.some((p) => p.id === d.draft.pay) ? d.draft.pay : 'invoice' });
+  } catch (e) { /* defekter Eintrag: leer starten */ }
+}
+function render(focus) {
+  save();
+  renderSteps();
+  const app = document.getElementById('app');
+  app.innerHTML = [view1, view2, view3, view4, view5][S.step - 1]();
+  if (focus) { const h = app.querySelector('h1'); if (h) h.focus({ preventScroll: true }); window.scrollTo(0, 0); app.classList.remove('fwd', 'bwd'); void app.offsetWidth; app.classList.add(S.step >= (render.last || 1) ? 'fwd' : 'bwd'); }
+  render.last = S.step;
+}
+/* Browser-Zurück funktioniert zwischen den Schritten. */
+function go(step) {
+  FLASH = ''; S.confirmCancel = false; S.apiErr = false; S.restored = false;
+  if (step !== 3) S.editForm = false;
+  if (step > 2) S.editing = false;
+  if (S.step !== step) { S.bookErr = false; S.formErr = false; S.bookBusy = false; }
+  if (step === 5 && S.step !== 5) { S.prevStep = S.step; S.profile = ACCOUNT ? Object.assign({}, ACCOUNT) : null; S.profileErr = false; }
+  /* Angemeldet: Kontaktangaben in der Reservierung vorausfüllen, bleiben änderbar. */
+  if (step === 3 && ACCOUNT && !S.form.name && !S.form.mail) Object.assign(S.form, { name: ACCOUNT.name, mail: ACCOUNT.mail, pay: ACCOUNT.pay || 'invoice' });
+  S.step = step; history.pushState({ step: step }, '', '#' + step); render(true);
+}
+function goFlash(step, msg) { go(step); FLASH = msg; render(false); }
+window.addEventListener('popstate', (e) => {
+  let st = (e.state && e.state.step) || 1;
+  /* Zurück auf die Reservierung zeigt immer den gespeicherten Stand, nie ungespeicherte Änderungen. */
+  if (st === 4) { if (BOOKING) loadBooking(); }
+  else if (st > 1 && st < 5 && !S.res) st = 1;
+  if (st === 5) { S.profile = ACCOUNT ? Object.assign({}, ACCOUNT) : null; S.profileErr = false; }
+  if (st !== 3) S.editForm = false;
+  S.step = st; S.confirmCancel = false; S.apiErr = false; S.bookErr = false; S.bookBusy = false; FLASH = ''; render(true);
+});
+const copyBoxes = (bs) => bs.map((b) => Object.assign({}, b));
+function loadBooking() {
+  S = fresh();
+  Object.assign(S, { needStr: BOOKING.needStr, boxes: copyBoxes(BOOKING.boxes), res: BOOKING.res, form: Object.assign({}, BOOKING.form), resNo: BOOKING.resNo });
+}
+function openBooking(msg) {
+  loadBooking();
+  if (msg) goFlash(4, msg); else go(4);
+}
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
+const period = (f) => 'ab ' + dateDe(f.date) + (f.until ? ' bis ' + dateDe(f.until) + ' (' + daysBetween(f.date, f.until) + ' Tage)' : '');
+function shareBooking() {
+  const text = 'Lagerraum reserviert (' + S.resNo + '), ' + period(S.form) + ': ' + S.boxes.map((b, i) => NAMES[i] + ' ' + b.l + ' × ' + b.b + ' × ' + b.h + ' m').join(', ') + '.';
+  const say = toast;
+  if (navigator.share) navigator.share({ title: 'Lagerraum-Reservierung', text: text }).catch(() => {});
+  else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => say('Reservierung kopiert.'), () => say(text));
+  else say(text);
+}
+/* Ergebnis als Link teilen: enthält nur Bedarf und Boxmasse, keine Personendaten. */
+function share() {
+  const r = S.res, t = texts(r);
+  const url = location.href.split(/[?#]/)[0] + '?n=' + encodeURIComponent(String(r.need)) + '&b=' + S.boxes.map((b) => ['l', 'b', 'h'].map((k) => String(dimNum(b[k]).n)).join('x')).join('_');
+  const text = 'Lagerraum Box-Check: ' + t.head + '. ' + S.boxes.map((b, i) => NAMES[i] + ' ' + b.l + ' × ' + b.b + ' × ' + b.h + ' m').join(', ') + ' = ' + fmtTotal(r.total, r.need) + ' m³ bei ' + f2(r.need) + ' m³ Bedarf.';
+  const say = toast;
+  if (navigator.share) navigator.share({ title: 'Lagerraum Box-Check', text: text, url: url }).catch(() => {});
+  else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(() => say('Link kopiert.'), () => say(url));
+  else say(url);
+}
+
+/* candidate: vorgeschlagene Boxen vom Ergebnis-Screen. Sie ersetzen die Auswahl erst, wenn die Prüfung gelungen ist. */
+function check(candidate) {
+  if (S.busy) return;
+  const boxes = candidate || S.boxes;
+  const n = needNum();
+  const ps = boxes.map((b) => ['l', 'b', 'h'].map((k) => dimNum(b[k])));
+  if (n.bad || boxes.some((b) => boxBad(b))) {
+    S.showErr = true; S.step = 1; render(false);
+    const bad = document.querySelector('input.bad') || document.querySelector('.err:not(:empty)');
+    if (bad) { bad.scrollIntoView({ block: 'center' }); if (bad.focus) bad.focus(); }
+    return;
+  }
+  const from = S.step;
+  S.busy = true; S.apiErr = false;
+  if (from === 2) {
+    /* Ergebnis-Screen bleibt stehen, bis das neue Ergebnis da ist. */
+    app.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+    const s = app.querySelector('.actions .btn span'); if (s) s.textContent = 'Wird geprüft …';
+    const a = app.querySelector('.actions .alert'); if (a) a.remove();
+  } else render(false);
+  const started = S, sig = () => JSON.stringify([S.needStr, S.boxes]), sigAtStart = sig();
+  Promise.all(ps.map((p) => apiVolume(p[0].n, p[1].n, p[2].n))).then((rs) => {
+    if (S !== started) return; /* inzwischen zurückgesetzt oder Reservierung geöffnet: Ergebnis verwerfen */
+    /* Eingaben während der laufenden Prüfung geändert: das Ergebnis gehört nicht mehr dazu. */
+    if (sig() !== sigAtStart) { S.busy = false; render(false); return; }
+    S.boxes = boxes;
+    const vols = rs.map((x) => x.volume);
+    const total = Math.round(vols.reduce((a, x) => a + x, 0) * 1e6) / 1e6;
+    const diff = Math.round((total - n.n) * 1e6) / 1e6;
+    const odd = S.boxes.map((b, i) => (plaus(b) ? NAMES[i] + ': ' + plaus(b) : '')).filter(Boolean);
+    const rec = recommend(n.n);
+    /* "Zu viel Platz": mehr als das Doppelte des Bedarfs und der Katalog-Vorschlag wäre kleiner. */
+    const over = diff >= 0 && total >= 2 * n.n && rec && rec.total < total ? rec : null;
+    S.res = { need: n.n, vols: vols, total: total, diff: diff, fits: diff >= 0, knapp: Math.abs(diff) <= ZONE, odd: odd, over: over };
+    S.busy = false;
+    if (from === 2) { S.step = 2; render(true); } else go(2);
+  }, () => {
+    if (S !== started) return;
+    S.busy = false; S.apiErr = true;
+    /* Fehler auf dem Ergebnis-Screen: dort bleiben, bisheriges Ergebnis und bisherige Auswahl stehen lassen. */
+    if (from === 2) render(false); else { S.step = 1; render(true); }
+  });
+}
+function stepNeed(by) {
+  const n = needNum();
+  S.needStr = Math.min(500, Math.max(0.5, Math.round(((n.bad ? 14 : n.n) + by) * 10) / 10)).toFixed(1);
+  dirty(); render(false);
+}
+/* Jede Änderung an Bedarf oder Boxen macht ein früheres Ergebnis ungültig: Zurück/Vorwärts zeigt es dann nicht mehr. */
+function dirty() { S.res = null; S.apiErr = false; }
+
+const app = document.getElementById('app');
+app.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const a = el.dataset.act, i = Number(el.dataset.i);
+  if (S.busy && S.step === 1 && a !== 'check') return; /* während der Prüfung bleibt die Auswahl stehen */
+  if (a === 'size') { S.boxes[i] = fromCat(CATALOG.find((c) => c.id === el.dataset.id)); dirty(); render(false); }
+  else if (a === 'own') { S.boxes[i].mode = 'own'; dirty(); render(false); const f = app.querySelector('input[data-i="' + i + '"]'); if (f) f.focus(); }
+  else if (a === 'add') { if (S.boxes.length < MAX_BOXES) S.boxes.push(emptyBox()); S.showErr = false; dirty(); render(false); }
+  else if (a === 'remove') { S.boxes.splice(i, 1); dirty(); render(false); }
+  else if (a === 'need-') stepNeed(-0.5);
+  else if (a === 'need+') stepNeed(0.5);
+  else if (a === 'reco') { const n = needNum(); if (!n.bad) { S.boxes = recommend(n.n).boxes.map(fromCat); S.showErr = false; dirty(); render(false); } }
+  else if (a === 'check') check();
+  else if (a === 'recoFix') check(S.res.over.boxes.map(fromCat));
+  else if (a === 'fix') { const f = (S.fx || [])[Number(el.dataset.j)]; if (f) check(f.boxes); }
+  else if (a === 'hideUndo') { UNDO = null; saveUndo(); render(false); }
+  else if (a === 'shareBooking') shareBooking();
+  else if (a === 'back') go(1);
+  else if (a === 'toResult') go(2);
+  else if (a === 'toReserve') {
+    if (S.editing && BOOKING) {
+      Object.assign(BOOKING, { needStr: S.needStr, boxes: copyBoxes(S.boxes), res: S.res });
+      saveBooking(); S.editing = false; goFlash(4, 'Reservierung geändert.');
+    } else go(3);
+  }
+  else if (a === 'login') { ACCOUNT = Object.assign({}, DEMO); saveAccount(); S.profile = Object.assign({}, ACCOUNT); render(true); FLASH = 'Angemeldet als ' + ACCOUNT.name + '.'; render(false); }
+  else if (a === 'logout') { ACCOUNT = null; saveAccount(); S.profile = null; const back = S.prevStep && S.prevStep !== 5 ? S.prevStep : 1; go(back === 4 && !BOOKING ? 1 : (back > 1 && !S.res ? 1 : back)); }
+  else if (a === 'closeAccount') { const back = S.prevStep && S.prevStep !== 5 ? S.prevStep : 1; go(back === 4 && !BOOKING ? 1 : (back > 1 && !S.res ? 1 : back)); }
+  else if (a === 'saveProfile') {
+    const bad = profileBad(S.profile);
+    if (bad.name || bad.mail) { S.profileErr = true; FLASH = ''; render(false); const f = app.querySelector('input.bad'); if (f) f.focus(); }
+    else { ACCOUNT = Object.assign({}, S.profile); saveAccount(); S.profileErr = false; FLASH = 'Angaben gespeichert.'; render(false); }
+  }
+  else if (a === 'pay') {
+    /* Auswahl direkt am Knopf umschalten, damit getippte Formularwerte stehen bleiben. */
+    if (S.step === 5 && S.profile) S.profile.pay = el.dataset.id; else S.form.pay = el.dataset.id;
+    el.parentElement.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === el)));
+  }
+  else if (a === 'ics') downloadIcs();
+  else if (a === 'share') share();
+  else if (a === 'openBooking') { if (BOOKING) openBooking(); }
+  else if (a === 'editForm') { S.editForm = true; S.formErr = false; go(3); }
+  else if (a === 'editBoxes') { S.editing = true; go(1); }
+  else if (a === 'cancelAsk') { S.confirmCancel = true; render(false); }
+  else if (a === 'cancelNo') { S.confirmCancel = false; render(false); }
+  else if (a === 'cancelYes') {
+    UNDO = BOOKING; BOOKING = null; saveBooking(); saveUndo(); S = fresh();
+    go(1);
+  }
+  else if (a === 'undoCancel') { if (UNDO) { BOOKING = UNDO; UNDO = null; saveBooking(); saveUndo(); openBooking('Reservierung wiederhergestellt.'); } }
+  else if (a === 'reserve') {
+    if (S.bookBusy) return;
+    const bad = formBad();
+    if (bad.date || bad.until || bad.name || bad.mail) { S.formErr = true; render(false); const f = app.querySelector('input.bad'); if (f) f.focus(); }
+    else {
+      /* Simulierte Buchung: kurze Wartezeit, dann Bestätigung oder (im Testmodus) Fehler. */
+      S.bookBusy = true; S.bookErr = false; render(false);
+      const started = S;
+      setTimeout(() => {
+        /* Inzwischen weggeblättert oder zurückgesetzt: nichts buchen. */
+        if (S !== started || S.step !== 3) { started.bookBusy = false; return; }
+        S.bookBusy = false;
+        if (SIM.bookErr) { S.bookErr = true; render(false); return; }
+        if (S.editForm && BOOKING) {
+          BOOKING.form = Object.assign({}, S.form); saveBooking(); S.editForm = false;
+          goFlash(4, 'Reservierung geändert.'); return;
+        }
+        S.resNo = 'LR-' + String(Math.floor(100000 + Math.random() * 900000));
+        BOOKING = { resNo: S.resNo, form: Object.assign({}, S.form), needStr: S.needStr, boxes: copyBoxes(S.boxes), res: S.res };
+        UNDO = null; saveBooking(); saveUndo();
+        go(4);
+      }, SIM.delay + 300);
+    }
+  }
+  else if (a === 'reset') { S = fresh(); go(1); }
+  /* Die Ansicht wurde neu aufgebaut: Fokus zurück auf dasselbe Bedienelement (oder die Rückfrage), nicht auf den Seitenanfang. */
+  if (!app.contains(document.activeElement) || document.activeElement === document.body) {
+    const d = el.dataset;
+    const key = '[data-act="' + a + '"]' + (d.i !== undefined ? '[data-i="' + d.i + '"]' : '') + (d.id !== undefined ? '[data-id="' + d.id + '"]' : '') + (d.j !== undefined ? '[data-j="' + d.j + '"]' : '');
+    const next = (a === 'cancelAsk' && app.querySelector('button[data-act="cancelNo"]')) || app.querySelector(key + ':not([disabled])') || app.querySelector('h1');
+    if (next) next.focus({ preventScroll: true });
+  }
+});
+document.querySelector('.tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  const t = b.dataset.tab;
+  if (t === 'account') { if (S.step !== 5) go(5); }
+  else if (t === 'booking') { if (S.step !== 4) { if (BOOKING) openBooking(); else go(4); } }
+  else if (S.step > 3 || S.editing || S.editForm) { S.editing = false; S.editForm = false; go(1); }
+});
+document.getElementById('back').addEventListener('click', () => {
+  if (S.step === 3) { if (S.editForm && BOOKING) openBooking(); else go(2); }
+  else if (S.step === 2) go(1);
+  else if (S.editing && BOOKING) openBooking();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.confirmCancel) { S.confirmCancel = false; render(false); const b = app.querySelector('[data-act="cancelAsk"]'); if (b) b.focus(); } });
+app.addEventListener('input', (e) => {
+  const el = e.target, ds = el.dataset || {};
+  setTimeout(save, 0);
+  if (ds.need || ds.k) {
+    /* Geänderte Eingabe: altes Ergebnis und alte Fehlermeldung gelten nicht mehr. */
+    const hadErr = S.apiErr; dirty();
+    if (hadErr) { const al = app.querySelector('.actions .alert'); if (al) al.remove(); const sp = app.querySelector('[data-act="check"] span'); if (sp) sp.textContent = 'Prüfen, ob es passt'; }
+  }
+  if (ds.need) {
+    S.needStr = el.value;
+    document.getElementById('reco').innerHTML = recoHtml();
+    document.getElementById('needHint').textContent = needHint();
+    document.getElementById('pickSum').textContent = pickSum();
+    if (S.showErr) { const b = needNum().bad || ''; el.classList.toggle('bad', !!b); document.getElementById('needErr').textContent = b; }
+  } else if (ds.k) {
+    const i = Number(ds.i);
+    S.boxes[i][ds.k] = el.value;
+    const wn = document.getElementById('warn' + i); if (wn) wn.textContent = plaus(S.boxes[i]);
+    if (S.showErr) { el.classList.toggle('bad', !!dimNum(el.value).bad); document.getElementById('err' + i).textContent = boxBad(S.boxes[i]); }
+    document.getElementById('pickSum').textContent = pickSum();
+  } else if (ds.p) {
+    if (S.profile) S.profile[ds.p] = el.value;
+    if (S.profileErr) { const b = profileBad(S.profile)[ds.p] || ''; el.classList.toggle('bad', !!b); const pe = document.getElementById('perr-' + ds.p); if (pe) pe.textContent = b; }
+  } else if (ds.f) {
+    S.form[ds.f] = el.value;
+    if (S.formErr) { const b = formBad()[ds.f]; el.classList.toggle('bad', !!b); document.getElementById('ferr-' + ds.f).textContent = b; }
+  }
+});
+app.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+  if (S.step === 1) check();
+  else if (S.step === 3) app.querySelector('[data-act=reserve]').click();
+});
+
+/* Testmodus: nur mit ?test in der Adresse sichtbar, nicht Teil des Designs. */
+if (/[?&]test\b/.test(location.search)) {
+  const box = document.getElementById('test'), tab = document.getElementById('simtab');
+  box.classList.add('on'); tab.classList.add('on');
+  box.innerHTML = '<div><h2>Simulation</h2><p class="hint">Nur für Tests, nicht Teil des Designs. Sichtbar mit ?test in der Adresse.</p></div>' +
+    '<label>Szenario laden (Bedarf 14.0 m³)<select id="ex"><option value="">Leer starten</option>' + Object.keys(EXAMPLES).map((k) => '<option>' + k + '</option>').join('') + '</select></label>' +
+    '<label class="chk"><input type="checkbox" id="simApi"> Prüfung schlägt fehl (API-Fehler)</label>' +
+    '<label class="chk"><input type="checkbox" id="simBook"> Reservierung schlägt fehl</label>' +
+    '<label>Antwortzeit der API<select id="simDelay"><option value="500">Normal (0.5 s)</option><option value="0">Sofort</option><option value="3000">Langsam (3 s)</option></select></label>' +
+    '<button type="button" class="btn2" id="simReset">Alles zurücksetzen</button>';
+  const loadEx = (key) => {
+    const rows = EXAMPLES[key];
+    S = fresh();
+    if (rows) S.boxes = rows.map((r) => { const c = CATALOG.find((x) => x.l === r[0] && x.b === r[1] && x.h === r[2]); return c ? fromCat(c) : { mode: 'own', l: r[0], b: r[1], h: r[2] }; });
+    history.replaceState({ step: 1 }, '', location.pathname + location.search);
+    render(false);
+  };
+  document.getElementById('ex').addEventListener('change', (e) => loadEx(e.target.value));
+  document.getElementById('simApi').addEventListener('change', (e) => { SIM.apiErr = e.target.checked; });
+  document.getElementById('simBook').addEventListener('change', (e) => { SIM.bookErr = e.target.checked; });
+  document.getElementById('simDelay').addEventListener('change', (e) => { SIM.delay = Number(e.target.value); });
+  document.getElementById('simReset').addEventListener('click', () => {
+    Object.assign(SIM, { apiErr: false, bookErr: false, delay: 500 });
+    document.getElementById('simApi').checked = false; document.getElementById('simBook').checked = false;
+    document.getElementById('simDelay').value = '500'; document.getElementById('ex').value = '';
+    BOOKING = null; UNDO = null; FLASH = ''; saveBooking(); saveUndo(); ACCOUNT = null; saveAccount();
+    loadEx('');
+  });
+  tab.addEventListener('click', () => { const o = box.classList.toggle('open'); tab.setAttribute('aria-expanded', String(o)); tab.textContent = o ? 'Schliessen' : 'Simulation'; });
+}
+history.replaceState({ step: 1 }, '', location.pathname + location.search);
+load();
+/* Geteilter Link (?n=14.0&b=2.0x2.0x2.5_2.0x1.0x2.0): Masse übernehmen und direkt prüfen. */
+let shared = false;
+(() => {
+  const P = new URLSearchParams(location.search);
+  if (!P.get('b')) return;
+  const rows = P.get('b').split('_').slice(0, MAX_BOXES).map((x) => x.split('x'));
+  if (!rows.every((r) => r.length === 3)) return;
+  S.boxes = rows.map((r) => { const c = CATALOG.find((x) => Number(x.l) === Number(r[0]) && Number(x.b) === Number(r[1]) && Number(x.h) === Number(r[2])); return c ? fromCat(c) : { mode: 'own', l: r[0], b: r[1], h: r[2] }; });
+  if (P.get('n')) S.needStr = P.get('n');
+  S.restored = false; shared = true;
+  P.delete('b'); P.delete('n');
+  const q = P.toString().replace(/=(&|$)/g, '$1');
+  history.replaceState({ step: 1 }, '', location.pathname + (q ? '?' + q : ''));
+})();
+render(false);
+if (shared) check();
+</script>
+</body>
+</html>

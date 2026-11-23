@@ -1,0 +1,13 @@
+title: Lagerraum Box-Check
+description: Prototyp und Dokumentation zum Programmentwurf Advanced Software Engineering
+baseurl: /SoftwareEngineering
+lang: de
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

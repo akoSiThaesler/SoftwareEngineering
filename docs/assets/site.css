@@ -1,0 +1,58 @@
+/* Dokumentation zum Lagerraum Box-Check. Gleiche Tokens wie der Prototyp. */
+:root{
+  --beton:#E9EBED; --paper:#FFFFFF; --ink:#171B20; --muted:#515A65; --line:#D6DADF;
+  --tor:#1F4E8C; --tor-dark:#163A69; --tor-tint:#EDF3FA; --band:#F4C20D; --warn-bg:#FFEFB8; --warn-fg:#3A2A00;
+  --display:"Barlow Condensed","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --text:"Barlow","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--paper);color:var(--ink);font:18px/1.55 var(--text);overflow-wrap:break-word}
+a{color:var(--tor);text-underline-offset:3px}
+a:hover{color:var(--tor-dark)}
+:focus-visible{outline:3px solid #0B63CE;outline-offset:2px}
+
+.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;padding:10px max(20px,calc((100vw - 1040px)/2))}
+.mark{display:flex;align-items:center;gap:10px;font:700 26px/1 var(--display);color:var(--ink);text-decoration:none}
+.top nav{display:flex;flex-wrap:wrap;gap:4px}
+.top nav a{min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;font-weight:600;text-decoration:none;color:var(--ink)}
+.top nav a:hover{background:var(--beton)}
+
+main{max-width:1040px;margin:0 auto;padding:28px 20px 64px}
+main>*{max-width:74ch}
+main>table,main>.wide,main>p:has(>img),main>.cards{max-width:none}
+h1{font:700 48px/1.05 var(--display);margin:8px 0 16px}
+h2{font:700 30px/1.15 var(--display);margin:44px 0 12px;padding-top:16px;border-top:1px solid var(--line)}
+h3{font:700 22px/1.2 var(--display);margin:28px 0 8px}
+p,ul,ol{margin:0 0 14px}
+li{margin-bottom:4px}
+hr{border:0;border-top:1px solid var(--line);margin:32px 0}
+code{font:0.9em "Cascadia Mono",Consolas,monospace;background:var(--beton);padding:1px 5px;border-radius:4px}
+em{color:var(--muted)}
+img{max-width:100%;height:auto}
+main p>img[src$=".png"]{max-width:min(390px,100%);border:1px solid var(--line);border-radius:12px;display:block}
+main p>img[src$=".svg"]{max-width:min(672px,100%);display:block}
+
+/* Hinweise: Warnband-Streifen wie im Prototyp */
+blockquote{position:relative;margin:18px 0;padding:14px 16px 14px 24px;background:var(--warn-bg);color:var(--warn-fg);border-radius:12px;overflow:hidden}
+blockquote::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(135deg,var(--ink) 0 6px,var(--band) 6px 12px)}
+blockquote p:last-child{margin-bottom:0}
+
+/* Tabellen: breite Tabellen scrollen in ihrem eigenen Kasten */
+table{display:block;overflow-x:auto;border-collapse:collapse;font-size:16px;line-height:1.45;margin:14px 0 22px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;min-width:7ch}
+th{font-weight:700;background:var(--beton);white-space:nowrap}
+td:nth-child(n+4){min-width:22ch}
+
+/* Startseite */
+.lead{font-size:21px;color:var(--muted);max-width:60ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:24px 0;padding:0;list-style:none}
+.cards li{margin:0}
+.cards a{display:flex;flex-direction:column;gap:6px;height:100%;padding:18px;border:1.5px solid var(--line);border-radius:14px;text-decoration:none;color:var(--ink)}
+.cards a:hover{border-color:var(--tor);background:var(--tor-tint)}
+.cards strong{font:700 24px/1.1 var(--display)}
+.cards span{color:var(--muted);font-size:16px}
+.btn{display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border-radius:14px;background:var(--tor);color:#fff;font-weight:700;text-decoration:none}
+.btn:hover{background:var(--tor-dark);color:#fff}
+
+footer{border-top:1px solid var(--line);padding:20px max(20px,calc((100vw - 1040px)/2));color:var(--muted);font-size:15px}

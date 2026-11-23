@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Lagerraum Box-Check: Konto und Login",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "login",
+        "label": "Anmelden",
+        "focus": [
+          "julia",
+          "webapp",
+          "proxy",
+          "backend",
+          "db"
+        ],
+        "note": "E-Mail-Adresse und Passwort gehen vom Gerät über den Proxy ins Backend; die Sitzung liegt in der Datenbank."
+      },
+      {
+        "id": "reset",
+        "label": "Passwort zurücksetzen",
+        "focus": [
+          "webapp",
+          "proxy",
+          "backend",
+          "mail",
+          "postfach",
+          "julia"
+        ],
+        "note": "Der Reset-Link verlässt unser Backend und läuft über einen fremden Dienst in Julias Postfach."
+      },
+      {
+        "id": "grenzen",
+        "label": "Trust Boundaries",
+        "focus": [
+          "webapp",
+          "proxy",
+          "mail"
+        ],
+        "note": "An diesen drei Stellen wechselt, wer die Kontrolle hat: Gerät, unser Docker-Netz, Drittanbieter."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "julia",
+      "type": "external",
+      "label": "Julia",
+      "sublabel": "Kundin",
+      "pos": [
+        60,
+        120
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "webapp",
+      "type": "frontend",
+      "label": "Web-App",
+      "sublabel": "Browser",
+      "pos": [
+        60,
+        330
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "backend",
+      "label": "Reverse Proxy",
+      "sublabel": "Traefik, TLS endet hier",
+      "pos": [
+        370,
+        330
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "Backend",
+      "sublabel": "Java-App, Schwerpunkt TT01",
+      "pos": [
+        700,
+        330
+      ],
+      "size": [
+        190,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Zentrale Datenbank",
+      "sublabel": "Konten, Sitzungen, Reservierungen",
+      "pos": [
+        680,
+        540
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "mail",
+      "type": "external",
+      "label": "E-Mail-Dienst",
+      "sublabel": "Versand",
+      "pos": [
+        1040,
+        330
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "postfach",
+      "type": "external",
+      "label": "Julias Postfach",
+      "sublabel": "E-Mail-Anbieter",
+      "pos": [
+        1040,
+        120
+      ],
+      "size": [
+        160,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "Julias Gerät",
+      "wraps": [
+        "webapp"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Backend Lagerraum (Server, Docker Compose)",
+      "wraps": [
+        "proxy",
+        "backend",
+        "db"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Drittanbieter",
+      "wraps": [
+        "mail"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "f1",
+      "from": "julia",
+      "to": "webapp",
+      "label": "1 E-Mail, Passwort",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "f2-4",
+      "from": "webapp",
+      "to": "proxy",
+      "label": "2 · 3 · 4 HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f5",
+      "from": "proxy",
+      "to": "backend",
+      "label": "5 HTTP intern"
+    },
+    {
+      "id": "f6",
+      "from": "backend",
+      "to": "db",
+      "label": "6 SQL",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "f7",
+      "from": "backend",
+      "to": "mail",
+      "label": "7 Mail mit Link",
+      "variant": "security"
+    },
+    {
+      "id": "f8",
+      "from": "mail",
+      "to": "postfach",
+      "label": "8 SMTP",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "link",
+      "from": "postfach",
+      "to": "julia",
+      "label": "9 öffnet den Link",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Flüsse 2 bis 4 · HTTPS",
+      "items": [
+        "2 Login: anonym",
+        "3 Reservierung: Session-Cookie",
+        "4 Reset: Einmal-Token"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Flüsse 5 bis 8",
+      "items": [
+        "5 intern: Cookie + IP vom Proxy",
+        "6 SQL: DB-Benutzer der App",
+        "7, 8 Mail: API-Schlüssel, SMTP"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Höchste Bedrohungen",
+      "items": [
+        "T1 Passwörter probieren (2)",
+        "T2 Reset-Token erraten (4)",
+        "T3 Konto auf fremde Adresse (2)"
+      ]
+    }
+  ]
+}

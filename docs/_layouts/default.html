@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+<meta name="description" content="{{ site.description }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="{{ '/' | relative_url }}">
+    <svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28"><rect x="2" y="4" width="24" height="22" rx="2" fill="#1F4E8C"/><path d="M5 10h18M5 14h18M5 18h18M5 22h18" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><rect x="2" y="4" width="24" height="4" rx="2" fill="#163A69"/></svg>
+    Lagerraum
+  </a>
+  <nav aria-label="Seiten">
+    <a href="{{ '/app/' | relative_url }}">Prototyp</a>
+    <a href="{{ '/ux/' | relative_url }}">UX</a>
+    <a href="{{ '/threat-model/' | relative_url }}">Threat Model</a>
+  </nav>
+</header>
+<main>
+{{ content }}
+</main>
+<footer>
+  <p>Programmentwurf Advanced Software Engineering, Wintersemester 2026. Prototyp mit simulierter API; alle Personen und Angaben sind erfunden.</p>
+</footer>
+</body>
+</html>
