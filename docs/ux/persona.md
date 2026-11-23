@@ -65,7 +65,8 @@ Persona-Typ: zukünftig (to-be), teils fiktiv (Quick Intro p. 4). Mit 2–3 Pers
 - **Folgehandlung:** passt → reservieren ohne Pflichtkonto und Ergebnis teilen; passt nicht → Box ändern, die Fehlmenge bleibt sichtbar.
 
 ## Nutzungskontext (UX L02 slides p. 17–24)
-| | |
+
+| Bereich | Beschreibung |
 |---|---|
 | **Nutzerin: Wissen** | Erster Umzug mit Einlagerung, nie Self-Storage genutzt; kennt Umzugskartons, keine Kubikmeter |
 | **Nutzerin: Demografie** | 31, keine Einschränkungen; nach dem Nachtdienst müde, kleine Schrift strengt an |
@@ -91,6 +92,7 @@ Ein Monitoralarm. Julia lässt das Handy liegen. Als sie zwanzig Minuten später
 Sie schickt das Ergebnis an Lena und Mira. Mira antwortet am Morgen: „Die Waschmaschine bleibt doch bei Jonas, oder?“ Julia klärt es mit Jonas: ja. Damit hat sie einen halben Kubikmeter Luft. Nach dem Frühstück reserviert sie die Kombination ab Samstag, 31.10. Die Bestätigung mit Zugangscode und Enddatum landet in ihrem Kalender.
 
 ## User Journey
+
 | Phase | Tut | Denkt | Kontaktpunkt | Gefühl | Chance |
 |---|---|---|---|---|---|
 | Auslöser (Anfang Okt.) | Trennt sich, vereinbart Auszug zum 31.10., findet Wohnung ab 15.12. | „Und wohin sechs Wochen mit meinen Möbeln?“ | Gespräch, Wohnungsportal | −2 | außerhalb des Produkts |
