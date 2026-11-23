@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lagerraum Mockups Sicherheit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+:root{
+  --beton:#E9EBED; --paper:#FFFFFF; --ink:#171B20; --muted:#515A65; --line:#D6DADF; --field:#7A848F;
+  --tor:#1F4E8C; --tor-dark:#163A69; --tor-tint:#EDF3FA; --band:#F4C20D;
+  --ok:#1B6B4A; --no:#A1241F; --warn-bg:#FFEFB8; --warn-fg:#3A2A00;
+  --bar-h:56px; --tabs-h:64px;
+  --display:"Barlow Condensed","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --text:"Barlow","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*{box-sizing:border-box;animation:none !important;transition:none !important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:17px/1.45 var(--text);overflow-wrap:break-word}
+button{font:inherit;color:inherit}
+h1,h2,p{margin:0}
+.shell{position:relative;width:390px;height:700px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+.appbar{height:var(--bar-h);flex:none;background:var(--paper);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:0 8px 0 4px}
+.appbar .mark{display:flex;align-items:center;gap:10px;padding-left:12px;font:700 24px/1 var(--display);letter-spacing:.01em}
+.appbar .mark svg{flex:none}
+.appbar .proto{margin-left:auto;margin-right:8px;font-size:13px;color:var(--muted)}
+#app{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+main{flex:1;padding:8px 20px 12px;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.tabs{flex:none;height:var(--tabs-h);background:var(--paper);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.tab{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);border-top:3px solid transparent;min-width:0}
+.tab .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px}
+.tab[aria-current="page"]{color:var(--tor);border-top-color:var(--tor)}
+h1{font:700 34px/1.05 var(--display);letter-spacing:.005em;padding:14px 0 6px}
+h2{font-size:15px;font-weight:700;color:var(--muted)}
+.lead{color:var(--muted);font-size:15px}
+.small{font-size:14px;color:var(--muted);font-weight:500}
+main p{min-width:0}
+main>.lead{padding:10px 0}
+.card{padding:18px 0;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line);min-width:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+.row h2{font:700 22px/1 var(--display);color:var(--ink)}
+.reco{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 14px;border-radius:12px;background:var(--tor-tint);margin-top:12px}
+.reco>span:first-child{flex:1 1 180px;min-width:0}
+.reco.info{background:var(--beton)}
+.reco.res{background:var(--ink);color:#fff}
+.link{min-height:44px;padding:0 14px;border:1.5px solid var(--tor);border-radius:999px;background:transparent;color:var(--tor);font-size:15px;font-weight:600;white-space:nowrap}
+.reco.info .link{border-color:var(--field);color:var(--ink)}
+label{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);font-weight:500}
+.fl{display:flex;flex-direction:column;gap:4px;min-width:0}
+input[type=text],input[type=email],input[type=password]{height:52px;width:100%;min-width:0;border:1.5px solid var(--field);border-radius:12px;padding:0 14px;font:600 18px var(--text);color:var(--ink);background:var(--paper)}
+input.bad{border-color:var(--no);border-width:2.5px}
+.err{color:var(--no);font-size:15px;font-weight:600}
+.btn{min-height:54px;width:100%;border:0;border-radius:14px;background:var(--tor);color:#fff;font-weight:700;font-size:18px;padding:8px 18px;display:flex;align-items:center;justify-content:center;text-align:center}
+.btn[disabled]{background:var(--beton);color:var(--muted)}
+.btn2{min-height:50px;width:100%;border:0;border-radius:14px;background:var(--beton);color:var(--ink);font-weight:600;padding:8px 18px;text-align:center}
+.btn2[disabled]{opacity:.5}
+.card>.btn2,.note>.btn2{background:transparent;border-radius:0;text-align:left;padding:12px 28px 12px 0;min-height:52px;border-top:1px solid var(--line);position:relative}
+.card>h2+.btn2{border-top:0}
+.card>.btn2::after,.note>.btn2::after{content:"";position:absolute;right:4px;top:50%;width:9px;height:9px;border-right:2.5px solid var(--field);border-top:2.5px solid var(--field);transform:translateY(-50%) rotate(45deg)}
+.quiet{min-height:48px;border:0;background:transparent;color:var(--no);font-weight:600;text-align:left;padding:0;text-decoration:underline;text-underline-offset:3px}
+.quiet[disabled]{opacity:.45}
+.actions{flex:none;background:var(--paper);border-top:1px solid var(--line);padding:10px 20px 12px;display:flex;flex-direction:column;gap:8px}
+.actions:empty{display:none}
+.alert{color:var(--no);font-weight:600;font-size:15px}
+.hero{margin:0 -20px;padding:16px 20px 18px;display:flex;flex-direction:column;gap:6px}
+.hero .v{display:flex;align-items:center;gap:12px}
+.hero h1{font-size:44px !important;padding:0}
+.hero p{font-size:18px}
+.hero.ok{background:var(--ok);color:#fff}
+.hero.warn{background:var(--band);color:var(--warn-fg)}
+.hero.no{background:var(--no);color:#fff}
+.note{margin-top:14px;padding:14px 14px 14px 20px;border-radius:12px;background:var(--warn-bg);color:var(--warn-fg);position:relative;overflow:hidden}
+.note::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(135deg,var(--ink) 0 6px,var(--band) 6px 12px)}
+.who{display:flex;align-items:center;gap:14px}
+.who div{min-width:0;word-break:break-word}
+.who .big{flex:none;width:60px;height:60px;border-radius:50%;background:var(--tor);color:#fff;display:flex;align-items:center;justify-content:center;font:700 24px var(--display)}
+.who .tag{display:inline-block;margin-top:4px;padding:1px 8px;border:1px solid var(--field);border-radius:999px;font-size:13px;color:var(--muted);font-weight:600}
+.empty{padding:20px 0;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.scrim{position:absolute;inset:0;z-index:30;background:rgba(23,27,32,.5)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:31;background:var(--paper);border-radius:20px 20px 0 0;padding:10px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.sheet::before{content:"";align-self:center;width:40px;height:4px;border-radius:2px;background:var(--line)}
+.sheet h2{font:700 26px/1.1 var(--display);color:var(--ink)}
+/* Mockup-eigene Ergänzungen, gleiche Tokens */
+.url{display:flex;align-items:center;gap:8px;margin:8px 0 0;padding:0 12px;height:40px;border-radius:999px;background:var(--beton);font:500 13px/1 ui-monospace,Consolas,monospace;color:var(--ink);white-space:nowrap;overflow:hidden}
+.url svg{flex:none}
+.code{margin:0;padding:12px;border-radius:10px;background:var(--beton);font:500 11.5px/1.7 ui-monospace,Consolas,monospace;white-space:pre;overflow:hidden}
+.code .hl{display:block;margin:0 -12px;padding:0 12px;background:var(--warn-bg);color:var(--warn-fg);font-weight:700;box-shadow:inset 6px 0 0 var(--band)}
+.code .hl.b{background:var(--tor-tint);color:var(--tor-dark);box-shadow:inset 6px 0 0 var(--tor)}
+.cap{font-size:16px;font-weight:600}
+.list{padding:24px;font:17px var(--text)}.list a{display:block;padding:6px 0;color:var(--tor)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+const STATES = ['T1-vorher','T1-nachher','T2-vorher','T2-nachher','T3-vorher','T3-nachher','T4-vorher','T4-nachher','T5-vorher','T5-nachher','T6-vorher','T6-nachher','T7-vorher','T7-nachher','T8-vorher','T8-nachher','T9-vorher','T9-nachher','T10-vorher','T10-nachher','T11-vorher','T11-nachher'];
+const ICON_OK = '<svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
+const LOCK = '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>';
+const MAIL = '<svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#1F4E8C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+const BOXI = '<svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#7A848F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>';
+const ICONS = {
+  check: '<path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+  booking: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  acct: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'
+};
+const tab = (id, name, cur) => '<button type="button" class="tab"' + (cur === id ? ' aria-current="page"' : '') + '><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[id] + '</svg><span class="nm">' + name + '</span></button>';
+function shell(o) {
+  return '<div class="shell"><header class="appbar"><div class="mark"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28"><rect x="2" y="4" width="24" height="22" rx="2" fill="#1F4E8C"/><path d="M5 10h18M5 14h18M5 18h18M5 22h18" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><rect x="2" y="4" width="24" height="4" rx="2" fill="#163A69"/></svg>Lagerraum</div><span class="proto">Mockup</span></header>' +
+    '<div id="app">' + o.main + '<div class="actions">' + (o.actions || '') + '</div></div>' +
+    '<nav class="tabs">' + tab('check', 'Prüfen', o.tab) + tab('booking', 'Reservierung', o.tab) + tab('acct', o.user ? 'Julia' : 'Anmelden', o.tab) + '</nav>' + (o.overlay || '') + '</div>';
+}
+const fld = (label, type, val, bad) => '<div class="fl"><label>' + label + '</label><input type="' + type + '" value="' + val + '" readonly' + (bad ? ' class="bad"' : '') + '></div>';
+const PW = '<div class="fl"><label>Passwort</label><input type="password" value="geheim1234" readonly></div>';
+const btn = (t, dis) => '<button type="button" class="btn"' + (dis ? ' disabled' : '') + '>' + t + '</button>';
+const btn2 = (t) => '<button type="button" class="btn2">' + t + '</button>';
+const url = (u) => '<div class="url">' + LOCK + u + '</div>';
+
+/* Reservierungsdetail wie im Prototyp, gekürzt. */
+function detail(o) {
+  return '<main>' + (o.note ? '<section class="note">' + o.note + '</section>' : '') + (o.info ? '<div class="reco info"><span>' + o.info + '</span></div>' : '') +
+    '<section class="hero ok" style="margin-top:12px"><div class="v">' + ICON_OK + '<h1 style="font-size:26px">Reserviert</h1></div><p>' + (o.who ? 'Ab 31.10.2026 für ' + o.who + '.' : 'Ab 31.10.2026 für Julia Brandt.') + '</p></section>' +
+    '<section class="card" style="padding:14px 0"><span class="small">Reservierungsnummer</span><p style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1">' + (o.no || 'LR-482913') + '</p><p><span class="small">Box</span><br>Grösse ' + (o.size || 'XL') + ' · ab 31.10.2026</p></section>' +
+    '<section class="card" style="padding:6px 0 0;gap:0;border-bottom:0"><button type="button" class="btn2"' + (o.dis ? ' disabled' : '') + '>Zeitraum oder Kontakt ändern</button><button type="button" class="btn2"' + (o.dis ? ' disabled' : '') + '>Reservierung stornieren</button></section></main>';
+}
+const sheetSmall = '<div class="scrim"></div>';
+
+function t11(hashes, cls, cap) {
+  const mails = ['julia.brandt@beispiel.ch', 'jonas@beispiel.ch', 'mia@beispiel.ch'];
+  const rows = mails.map((m, i) => m + '\n<span class="hl' + cls + '">  passwort: ' + hashes[i] + '</span>').join('');
+  return shell({ main: '<main><h1>Datenbank</h1><section class="card" style="border:0;padding-top:8px"><h2 style="color:var(--ink);font:700 22px/1 var(--display)">Tabelle konten in der Datenbank</h2><pre class="code">email | passwort\n' + rows + '</pre><p class="cap">' + cap + '</p></section></main>' });
+}
+const S = {
+  'T1-vorher': () => shell({ tab: 'acct', main: '<main><h1>Anmelden</h1><section class="card" style="border:0;padding-top:8px">' + fld('E-Mail-Adresse', 'email', 'julia.brandt@beispiel.ch') + PW + '<p class="err">E-Mail-Adresse oder Passwort falsch.</p><p class="small">Versuch 47</p></section></main>', actions: btn('Anmelden') }),
+  'T1-nachher': () => shell({ tab: 'acct', main: '<main><h1>Anmelden</h1><section class="card" style="border:0;padding-top:8px">' + fld('E-Mail-Adresse', 'email', 'julia.brandt@beispiel.ch') + PW + '<p class="err">Zu viele Versuche. Bitte warte 30 Sekunden.</p><div><button type="button" class="link">Passwort vergessen?</button></div></section></main>', actions: btn('Anmelden in 0:30', true) }),
+  'T2-vorher': () => shell({ tab: 'acct', main: '<main>' + url('lagerraum.example/reset?konto=1042') + '<h1>Neues Passwort setzen</h1><div class="reco info" style="margin:0 0 8px"><span>Link vom 12.10.2026</span></div><section class="card" style="border:0">' + fld('Neues Passwort', 'password', 'neuesPasswort1') + fld('Passwort wiederholen', 'password', 'neuesPasswort1') + '</section></main>', actions: btn('Passwort speichern') }),
+  'T2-nachher': () => shell({ tab: 'acct', main: '<main>' + url('lagerraum.example/reset?t=9f3a…c71e') + '<h1>Dieser Link gilt nicht mehr.</h1><p class="lead" style="padding-top:6px">Links zum Zurücksetzen gelten 15 Minuten und nur einmal.</p></main>', actions: btn('Neuen Link anfordern') }),
+  'T3-vorher': () => shell({ tab: 'acct', user: 1, main: '<main><h1>Mein Konto</h1><section class="card"><div class="who"><span class="big">JB</span><div><strong style="font-size:18px">Julia Brandt</strong><br><span class="lead" style="font-size:14px">julia.brandt@beispiel.ch</span></div></div></section><section class="card"><h2>Deine Reservierung</h2><p><strong>LR-482913</strong> · ab 31.10.2026<br>Grösse XL</p><button type="button" class="btn2">Ansehen und ändern</button></section></main>' }),
+  'T3-nachher': () => shell({ tab: 'acct', main: '<main><div style="padding-top:20px">' + MAIL + '</div><h1>Bestätige deine E-Mail-Adresse</h1><p class="lead" style="padding-top:6px;font-size:17px">Wir haben dir einen Link an julia.brandt@beispiel.ch geschickt. Erst danach siehst du deine Reservierungen.</p></main>', actions: btn2('Link nochmal senden') }),
+  'T4-vorher': () => shell({ tab: 'booking', user: 1, main: detail({ info: 'Angemeldet seit 3 Stunden' }), overlay: sheetSmall + '<div class="sheet"><h2>Reservierung stornieren?</h2><p>LR-482913, ab 31.10.2026. Du kannst das danach rückgängig machen.</p><button type="button" class="btn">Nein, behalten</button><button type="button" class="btn2" style="color:var(--no)">Ja, stornieren</button></div>' }),
+  'T4-nachher': () => shell({ tab: 'booking', user: 1, main: detail({}), overlay: sheetSmall + '<div class="sheet"><h2>Zur Sicherheit: dein Passwort</h2>' + PW + '<button type="button" class="btn">Stornieren bestätigen</button><button type="button" class="btn2">Abbrechen</button><p class="small" style="text-align:center">Du wirst nach 15 Minuten ohne Aktivität abgemeldet.</p></div>' }),
+  'T5-vorher': () => shell({ tab: 'booking', user: 1, main: '<main><h1>Reservierung</h1><div class="reco info" style="margin-top:4px"><span>Reservierung LR-482913 storniert.</span></div><div class="empty">' + BOXI + '<p>Du hast noch nichts reserviert.</p></div></main>', actions: btn('Box prüfen') }),
+  'T5-nachher': () => shell({ tab: 'booking', user: 1, main: '<main><h1>Reservierung</h1><div class="reco info" style="margin-top:4px"><span>Reservierung LR-482913 storniert. Du kannst das 48 Stunden lang rückgängig machen.</span><span style="flex:none"><button type="button" class="link">Rückgängig</button></span></div><section class="note">Eine Mail über die Stornierung ist unterwegs.</section><div class="empty">' + BOXI + '<p>Du hast noch nichts reserviert.</p></div></main>', actions: btn('Box prüfen') }),
+  'T6-vorher': () => shell({ tab: 'acct', main: '<main><h1>Passwort vergessen</h1><p class="lead" style="padding-bottom:12px">Wir schicken dir einen Link zum Zurücksetzen.</p>' + fld('E-Mail-Adresse', 'email', 'fremde.person@beispiel.ch', 1) + '<p class="err" style="padding-top:8px">Für diese E-Mail-Adresse gibt es kein Konto.</p></main>', actions: btn('Link senden') }),
+  'T6-nachher': () => shell({ tab: 'acct', main: '<main><h1>Passwort vergessen</h1><p class="lead" style="padding-bottom:12px">Wir schicken dir einen Link zum Zurücksetzen.</p>' + fld('E-Mail-Adresse', 'email', 'fremde.person@beispiel.ch') + '<div class="reco" style="margin-top:14px"><span><strong>Wenn es ein Konto mit dieser Adresse gibt, ist eine Mail unterwegs.</strong></span></div></main>', actions: btn('Link senden') }),
+  'T7-vorher': () => shell({ tab: 'booking', user: 1, main: detail({ info: 'Am Handy abgemeldet um 10:02. Hier weiter angemeldet.' }) }),
+  'T7-nachher': () => shell({ tab: 'acct', main: '<main><h1>Du wurdest abgemeldet</h1><p class="lead" style="padding-top:6px;font-size:17px">Du hast dich auf einem anderen Gerät abgemeldet. Bitte melde dich neu an.</p></main>', actions: btn('Neu anmelden') }),
+  'T8-vorher': () => shell({ tab: 'booking', user: 1, main: detail({ info: 'Angemeldet mit selbst gebautem Token', who: 'Jonas Beispiel', no: 'LR-771204', size: 'L' }) }),
+  'T8-nachher': () => shell({ tab: 'acct', main: '<main><h1>Anmeldung ungültig</h1><p class="lead" style="padding-top:6px;font-size:17px">Wir konnten deine Anmeldung nicht prüfen. Bitte melde dich neu an.</p></main>', actions: btn('Neu anmelden') }),
+  'T9-vorher': () => shell({ main: '<main><h1>Konfiguration</h1><section class="card" style="border:0;padding-top:8px"><h2 style="color:var(--ink);font:700 22px/1 var(--display)">docker-compose.yml im Repository</h2><pre class="code">konto:\n  image: lagerraum/konto\n  environment:\n<span class="hl">    JWT_SECRET: "sommer2026-geheim"</span>  ports: ["8080:8080"]</pre><p class="cap">Der Schlüssel steht im Repository. Wer es lesen kann, kennt ihn.</p></section></main>' }),
+  'T9-nachher': () => shell({ main: '<main><h1>Konfiguration</h1><section class="card" style="border:0;padding-top:8px"><h2 style="color:var(--ink);font:700 22px/1 var(--display)">docker-compose.yml im Repository</h2><pre class="code">konto:\n  image: lagerraum/konto\n  environment:\n<span class="hl b">    JWT_PRIVATE_KEY_FILE: /run/secrets/jwt_key</span>  ports: ["8080:8080"]</pre><p class="cap">Im Repository steht nur der Verweis. Der Schlüssel liegt im Secret-Speicher des Servers.</p></section></main>' }),
+  'T11-vorher': () => t11(['5f4dcc3b5aa765d61d8327de…', '482c811da5d5b4bc6d497ffa…', 'e10adc3949ba59abbe56e057…'], '', 'Schnelles Hash-Verfahren. Wer die Datenbank oder ein Backup hat, knackt die Passwörter in Minuten.'),
+  'T11-nachher': () => t11(['$argon2id$v=19$m=19456,t=2,p=1$…', '$argon2id$v=19$m=19456,t=2,p=1$…', '$argon2id$v=19$m=19456,t=2,p=1$…'], ' b', 'Argon2id ist absichtlich langsam. Jedes Passwort hat ein eigenes Salt, Durchprobieren lohnt sich nicht mehr.'),
+  'T10-vorher': () => shell({ tab: 'booking', user: 1, main: detail({ info: 'Sperrliste nicht erreichbar. Die App macht trotzdem weiter.' }) }),
+  'T10-nachher': () => shell({ tab: 'booking', user: 1, main: detail({ note: 'Gerade kannst du nur ansehen. Anmelden, Ändern und Stornieren gehen in ein paar Minuten wieder.', dis: 1 }) })
+};
+function render() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const root = document.getElementById('root');
+  if (S[id]) root.innerHTML = S[id]();
+  else root.innerHTML = '<div class="list"><h1>Mockups</h1>' + STATES.map((s) => '<a href="#' + s + '">' + s + '</a>').join('') + '</div>';
+}
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@ title: "Threat Model"
 
 # Threat Model: Konto und Login
 
-Erste Version zur Besprechung. Zum Vorführen gibt es das Diagramm auch als [interaktive Fassung](threat-model-interactive.html).
+Erste Version zur Besprechung. Zum Vorführen gibt es das Diagramm auch als [interaktive Fassung](threat-model-interactive.html). Die [Präsentation](Threat-Model-Lagerraum.pptx) zeigt jede Bedrohung mit einem Vorher-Nachher-Bild; die Bilder stammen aus den [Mockups](mock/screens.html).
 
 > **Entwurf**  
 > Der Prototyp hat noch kein Backend. Das Bild zeigt, wie die fertige App aussehen soll; im Team prüfen, ob wir sie so bauen.
