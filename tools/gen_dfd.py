@@ -1,8 +1,8 @@
-"""Data flow diagram for the ASE security threat model (focus TT01, accounts and login) of the Lagerraum app.
+"""Data flow diagram for the threat model (focus: accounts and login) of the Lagerraum app, version 1.
 
-Second version: first-iteration architecture (one backend, one central database, reverse proxy in front).
-Style comes from diagram_style.py. Classic DFD notation:
-rectangle = external actor, circle = process, cylinder = data store, dashed red = trust boundary.
+Kept small on purpose: five elements, six flows, labels written on the arrows.
+Rectangle = external actor, circle = process, cylinder = data store, dashed red = trust boundary.
+Style comes from diagram_style.py.
 Usage: python gen_dfd.py <out.svg>
 """
 import math
@@ -10,21 +10,21 @@ import sys
 
 from diagram_style import W, head, arrowhead
 
-H = 944
+H = 560
 EXTRA = """  <style>
-    .tb { fill: none; stroke: #B3261E; } .tb-f { fill: #B3261E; font: 600 13px "Cascadia Mono", Consolas, monospace; }
-    .legend { fill: #252A31; font: 400 13px "Cascadia Mono", Consolas, monospace; }
+    .tb { fill: none; stroke: #B3261E; } .tb-f { fill: #B3261E; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
+    .lbl { fill: #252A31; font: 400 14px Bahnschrift, "Segoe UI", sans-serif; }
+    .lbl-b { fill: #252A31; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
     @media (prefers-color-scheme: dark) {
-      .tb { stroke: #F0A29B; } .tb-f { fill: #F0A29B; } .legend { fill: #E1E7DE; }
+      .tb { stroke: #F0A29B; } .tb-f { fill: #F0A29B; } .lbl, .lbl-b { fill: #E1E7DE; }
     }
   </style>"""
 
-out = head(H, "Datenflussdiagramm: Benutzerkonto und Login im Lagerraum Box-Check",
-           "Julia meldet sich an ihrem Gerät in der Web-App an. Die Web-App schickt Login, Reservierungsänderungen "
-           "und Passwort-Reset über das Internet an den Reverse Proxy. Der Proxy leitet an das Backend weiter, das "
-           "Konten, Sitzungen und Reservierungen in der zentralen Datenbank hält und Reset-Links über einen externen "
-           "E-Mail-Dienst in Julias Postfach schickt. Drei Trust Boundaries: Julias Gerät, Backend im Docker-Netz, "
-           "Drittanbieter. Neun nummerierte Datenflüsse mit Daten, Protokoll und Identität.", "tm-dfd")
+out = head(H, "Datenflussdiagramm: Konto und Login im Lagerraum Box-Check",
+           "Julia meldet sich im Browser an. Login, Änderungen an der Reservierung und das Zurücksetzen des "
+           "Passworts gehen über das Internet an unser Backend. Das Backend speichert Konten und Reservierungen "
+           "in einer Datenbank und verschickt den Link zum Zurücksetzen über einen fremden E-Mail-Dienst in "
+           "Julias Postfach. Drei Trust Boundaries: Julias Gerät, unser Server, Drittanbieter.", "tm-dfd")
 out.append(EXTRA)
 out.append(f'  <rect class="paper" x="0" y="0" width="{W}" height="{H}"/>')
 
@@ -36,30 +36,26 @@ def boundary(x, y, w, h, label, lx, ly, anchor="start"):
 
 def actor(x, y, w, h, name, sub):
     out.append(f'  <rect class="input" x="{x}" y="{y}" width="{w}" height="{h}" stroke-width="1.4"/>')
-    out.append(f'  <text class="name-s" x="{x + w / 2}" y="{y + h / 2 - 3}" text-anchor="middle">{name}</text>')
-    out.append(f'  <text class="mono" x="{x + w / 2}" y="{y + h / 2 + 15}" text-anchor="middle">{sub}</text>')
+    out.append(f'  <text class="name" x="{x + w / 2}" y="{y + h / 2 - 3}" text-anchor="middle">{name}</text>')
+    out.append(f'  <text class="lbl" x="{x + w / 2}" y="{y + h / 2 + 16}" text-anchor="middle">{sub}</text>')
 
 
-def process(cx, cy, r, lines, sub, cls="paper ink-s", name_cls="name-s"):
+def process(cx, cy, r, lines, cls="paper ink-s", name_cls="name"):
     out.append(f'  <circle class="{cls}" cx="{cx}" cy="{cy}" r="{r}" stroke-width="1.4"/>')
-    n = len(lines) + (1 if sub else 0)
-    y = cy - (n - 1) * 9 + 5
+    y = cy - (len(lines) - 1) * 9 + 5
     for t in lines:
         out.append(f'  <text class="{name_cls}" x="{cx}" y="{y:.0f}" text-anchor="middle">{t}</text>')
         y += 18
-    if sub:
-        out.append(f'  <text class="mono" x="{cx}" y="{y:.0f}" text-anchor="middle">{sub}</text>')
 
 
 def store(cx, top, name, sub, w=176, h=66, ry=9):
     x0, x1 = cx - w / 2, cx + w / 2
     out.append(f'  <path class="paper ink-s" stroke-width="1.4" d="M{x0},{top + ry} V{top + h - ry} A{w / 2},{ry} 0 0 0 {x1},{top + h - ry} V{top + ry} A{w / 2},{ry} 0 0 0 {x0},{top + ry} A{w / 2},{ry} 0 0 0 {x1},{top + ry}"/>')
-    out.append(f'  <text class="name-s" x="{cx}" y="{top + 34}" text-anchor="middle">{name}</text>')
-    out.append(f'  <text class="mono" x="{cx}" y="{top + 52}" text-anchor="middle">{sub}</text>')
+    out.append(f'  <text class="name" x="{cx}" y="{top + 34}" text-anchor="middle">{name}</text>')
+    out.append(f'  <text class="lbl" x="{cx}" y="{top + 52}" text-anchor="middle">{sub}</text>')
 
 
-def flow(points, both=False, r=8):
-    """orthogonal polyline with rounded corners; arrowhead at the end (and start when both=True)"""
+def flow(points, r=8):
     d = [f"M{points[0][0]:.1f},{points[0][1]:.1f}"]
     for i in range(1, len(points)):
         (px, py), (x, y) = points[i - 1], points[i]
@@ -70,87 +66,50 @@ def flow(points, both=False, r=8):
             d.append(f"L{x - ux * r:.1f},{y - uy * r:.1f} Q{x:.1f},{y:.1f} {x + vx * r:.1f},{y + vy * r:.1f}")
         else:
             d.append(f"L{x:.1f},{y:.1f}")
-    out.append(f'  <path class="muted-s" d="{" ".join(d)}" fill="none" stroke-width="1.6"/>')
+    out.append(f'  <path class="muted-s" d="{" ".join(d)}" fill="none" stroke-width="1.8"/>')
     (ax, ay), (bx, by) = points[-2], points[-1]
     n = math.hypot(bx - ax, by - ay)
     out.append(arrowhead(bx, by, (bx - ax) / n, (by - ay) / n, "muted-f"))
-    if both:
-        (ax, ay), (bx, by) = points[1], points[0]
-        n = math.hypot(bx - ax, by - ay)
-        out.append(arrowhead(bx, by, (bx - ax) / n, (by - ay) / n, "muted-f"))
 
 
-def badge(x, y, n):
-    out.append(f'  <circle class="paper ink-s" cx="{x}" cy="{y}" r="11" stroke-width="1.4"/>')
-    out.append(f'  <text class="num" x="{x}" y="{y + 4.5}" text-anchor="middle">{n}</text>')
+def label(x, y, num, text, anchor="start"):
+    out.append(f'  <text class="lbl" x="{x}" y="{y}" text-anchor="{anchor}"><tspan class="lbl-b">{num}</tspan> {text}</text>')
 
 
-def chord(cy, r, dx, lower=True):
-    """y on a circle outline at horizontal offset dx from its centre"""
-    dy = math.sqrt(max(0.0, r * r - dx * dx))
-    return cy + dy if lower else cy - dy
+BACK = (160, 318)
+MAIL = (566, 318)
 
-
-R = 50
-WEB = (104, 190)
-PROXY = (104, 392)
-BACK = (336, 392)
-MAIL = (520, 190)
-
-boundary(16, 122, 320, 132, "Julias Gerät", 326, 142, "end")
-boundary(440, 122, 216, 132, "Drittanbieter", 646, 246, "end")
-boundary(16, 306, 640, 312, "Backend Lagerraum (Server, Docker Compose)", 28, 606)
-out.append('  <text class="aside" x="176" y="285">Internet</text>')
+boundary(40, 12, 248, 104, "Julias Gerät", 52, 32)
+boundary(40, 234, 404, 236, "Unser Server", 52, 458)
+boundary(470, 234, 190, 170, "Drittanbieter", 482, 392)
 
 # flows
-flow([(104, 82), (104, WEB[1] - R)])                                                        # 1
-for dx in (-34, 0, 34):                                                                     # 2, 3, 4
-    flow([(WEB[0] + dx, chord(WEB[1], R, dx)), (PROXY[0] + dx, chord(PROXY[1], R, dx, lower=False))])
-flow([(PROXY[0] + R, PROXY[1]), (BACK[0] - R, BACK[1])])                                    # 5
-flow([(BACK[0], BACK[1] + R), (BACK[0], 520)])                                   # 6
-flow([(BACK[0] + 30, chord(BACK[1], R, 30, lower=False)), (BACK[0] + 30, 280), (MAIL[0], 280), (MAIL[0], MAIL[1] + R)])  # 7
-flow([(MAIL[0] + 20, chord(MAIL[1], R, 20, lower=False)), (MAIL[0] + 20, 82)])              # 8
-flow([(464, 54), (180, 54)])                                                               # 9
+flow([(160, 104), (160, BACK[1] - 56)])                                        # 1-3, one arrow
+flow([(BACK[0] + 56, BACK[1]), (252, BACK[1])])                                # 4
+flow([(BACK[0], BACK[1] + 56), (BACK[0], 428), (MAIL[0], 428), (MAIL[0], MAIL[1] + 50)])  # 5
+flow([(MAIL[0], MAIL[1] - 50), (MAIL[0], 104)])                                # 6
+flow([(470, 72), (270, 72)])                                                   # 7
+
+label(178, 150, "1", "Anmelden · HTTPS · noch anonym")
+label(178, 174, "2", "Reservierung ändern · HTTPS · Cookie")
+label(178, 198, "3", "Passwort zurücksetzen · HTTPS · Link aus der Mail")
+out.append('  <text class="aside" x="142" y="178" text-anchor="end">Internet</text>')
+label(334, 274, "4", "Konten, Reservierungen · SQL", "middle")
+label(364, 420, "5", "Mail mit Link · HTTPS · API-Schlüssel", "middle")
+label(578, 176, "6", "Mail · SMTP")
+label(370, 62, "7", "öffnet den Link", "middle")
 
 # elements
-actor(28, 26, 152, 56, "Julia", "Kundin")
-actor(464, 26, 152, 56, "Julias Postfach", "E-Mail-Anbieter")
-process(*WEB, R, ["Web-App"], "Browser")
-process(*PROXY, R, ["Reverse", "Proxy"], "Traefik")
-out.append(f'  <text class="mono" x="{PROXY[0]}" y="{PROXY[1] + R + 18}" text-anchor="middle">TLS endet hier</text>')
-process(*BACK, R, ["Backend"], "Java-App", cls="acc", name_cls="name-acc")
-process(*MAIL, R, ["E-Mail-", "Dienst"], "")
-store(336, 520, "Zentrale Datenbank", "Konten · Sitzungen · Reservierungen", w=296)
+actor(60, 44, 210, 60, "Julia", "im Browser")
+actor(470, 44, 190, 60, "Julias Postfach", "bei ihrem E-Mail-Anbieter")
+process(*BACK, 56, ["Backend"], cls="acc", name_cls="name-acc")
+process(*MAIL, 50, ["E-Mail-", "Dienst"])
+store(334, 285, "Datenbank", "Konten · Reservierungen", w=164)
 
-for (x, y, n) in ((104, 104, 1), (70, 282, 2), (104, 282, 3), (138, 282, 4), (220, 392, 5),
-                  (336, 480, 6), (444, 280, 7), (540, 104, 8), (322, 54, 9)):
-    badge(x, y, n)
-
-# legend: every flow with data, protocol, identity
-y = 652
-out.append(f'  <text class="name" x="16" y="{y}">Datenflüsse: was · wie · als wer</text>')
-lines = [
-    (1, "E-Mail-Adresse, Passwort · Eingabe am Gerät · Julia"),
-    (2, "Login, Konto anlegen: E-Mail-Adresse + Passwort · HTTPS · anonym"),
-    (3, "Box-Reservierung lesen, ändern, stornieren · HTTPS · Session-Cookie"),
-    (4, "Reset anfordern, neues Passwort setzen · HTTPS · anonym, dann Einmal-Token"),
-    (5, "Anfragen mit Cookie und Absender-IP weitergereicht · HTTP intern · Proxy"),
-    (6, "Konten, Passwort-Hash, Sitzungen, Reservierungen · SQL · DB-Benutzer der App"),
-    (7, "Mail mit Link (Bestätigung, Reset) · HTTPS-API · API-Schlüssel"),
-    (8, "Mail mit Link · SMTP, TLS nicht garantiert · E-Mail-Dienst"),
-    (9, "Link aus der Mail öffnen · Klick, öffnet die Web-App · Julia"),
-]
-for n, text in lines:
-    y += 22
-    out.append(f'  <text class="num" x="34" y="{y}" text-anchor="end">{n}</text>')
-    out.append(f'  <text class="legend" x="46" y="{y}">{text}</text>')
-y += 30
-out.append(f'  <text class="mono" x="16" y="{y}">Pfeil = Richtung der Anfrage, Antworten sind nicht gezeichnet</text>')
-y += 20
-out.append(f'  <text class="mono" x="16" y="{y}">Rechteck = externer Akteur · Kreis = Prozess · Zylinder = Datenspeicher</text>')
-out.append(f'  <text class="mono" x="16" y="{y + 20}">rot gestrichelt = Trust Boundary · blau = Schwerpunkt TT01</text>')
+out.append(f'  <text class="mono" x="40" y="{H - 44}">Rechteck = Person oder fremdes System · Kreis = unser Code · Zylinder = Daten</text>')
+out.append(f'  <text class="mono" x="40" y="{H - 24}">rot gestrichelt = Trust Boundary: hier wechselt, wer die Kontrolle hat</text>')
 out.append("</svg>")
 
 with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(out) + "\n")
-print("wrote", sys.argv[1], "height", H, "legend ends at", y + 20)
+print("wrote", sys.argv[1], "height", H)

@@ -10,78 +10,36 @@
         "label": "Anmelden",
         "focus": [
           "julia",
-          "webapp",
-          "proxy",
           "backend",
           "db"
         ],
-        "note": "E-Mail-Adresse und Passwort gehen vom Gerät über den Proxy ins Backend; die Sitzung liegt in der Datenbank."
+        "note": "E-Mail-Adresse und Passwort gehen vom Browser an unser Backend. Konten liegen in der Datenbank."
       },
       {
         "id": "reset",
         "label": "Passwort zurücksetzen",
         "focus": [
-          "webapp",
-          "proxy",
+          "julia",
           "backend",
           "mail",
-          "postfach",
-          "julia"
+          "postfach"
         ],
-        "note": "Der Reset-Link verlässt unser Backend und läuft über einen fremden Dienst in Julias Postfach."
-      },
-      {
-        "id": "grenzen",
-        "label": "Trust Boundaries",
-        "focus": [
-          "webapp",
-          "proxy",
-          "mail"
-        ],
-        "note": "An diesen drei Stellen wechselt, wer die Kontrolle hat: Gerät, unser Docker-Netz, Drittanbieter."
+        "note": "Der Link verlässt unseren Server und läuft über einen fremden Dienst in Julias Postfach."
       }
     ]
   },
   "components": [
     {
       "id": "julia",
-      "type": "external",
+      "type": "frontend",
       "label": "Julia",
-      "sublabel": "Kundin",
+      "sublabel": "im Browser",
       "pos": [
-        60,
+        80,
         120
       ],
       "size": [
-        150,
-        64
-      ]
-    },
-    {
-      "id": "webapp",
-      "type": "frontend",
-      "label": "Web-App",
-      "sublabel": "Browser",
-      "pos": [
-        60,
-        330
-      ],
-      "size": [
-        150,
-        64
-      ]
-    },
-    {
-      "id": "proxy",
-      "type": "backend",
-      "label": "Reverse Proxy",
-      "sublabel": "Traefik, TLS endet hier",
-      "pos": [
-        370,
-        330
-      ],
-      "size": [
-        180,
+        170,
         64
       ]
     },
@@ -89,27 +47,27 @@
       "id": "backend",
       "type": "backend",
       "label": "Backend",
-      "sublabel": "Java-App, Schwerpunkt TT01",
+      "sublabel": "Login, Reservierung",
       "pos": [
-        700,
-        330
+        80,
+        400
       ],
       "size": [
-        190,
+        170,
         64
       ]
     },
     {
       "id": "db",
       "type": "database",
-      "label": "Zentrale Datenbank",
-      "sublabel": "Konten, Sitzungen, Reservierungen",
+      "label": "Datenbank",
+      "sublabel": "Konten, Reservierungen",
       "pos": [
-        680,
-        540
+        450,
+        400
       ],
       "size": [
-        230,
+        200,
         64
       ]
     },
@@ -117,13 +75,13 @@
       "id": "mail",
       "type": "external",
       "label": "E-Mail-Dienst",
-      "sublabel": "Versand",
+      "sublabel": "verschickt die Mail",
       "pos": [
-        1040,
-        330
+        860,
+        400
       ],
       "size": [
-        160,
+        180,
         64
       ]
     },
@@ -131,13 +89,13 @@
       "id": "postfach",
       "type": "external",
       "label": "Julias Postfach",
-      "sublabel": "E-Mail-Anbieter",
+      "sublabel": "bei ihrem Anbieter",
       "pos": [
-        1040,
+        860,
         120
       ],
       "size": [
-        160,
+        180,
         64
       ]
     }
@@ -147,14 +105,13 @@
       "kind": "security-group",
       "label": "Julias Gerät",
       "wraps": [
-        "webapp"
+        "julia"
       ]
     },
     {
       "kind": "security-group",
-      "label": "Backend Lagerraum (Server, Docker Compose)",
+      "label": "Unser Server",
       "wraps": [
-        "proxy",
         "backend",
         "db"
       ]
@@ -169,85 +126,71 @@
   ],
   "connections": [
     {
-      "id": "f1",
+      "id": "f1-3",
       "from": "julia",
-      "to": "webapp",
-      "label": "1 E-Mail, Passwort",
+      "to": "backend",
+      "label": "1 · 2 · 3 HTTPS",
+      "variant": "emphasis",
       "fromSide": "bottom",
       "toSide": "top",
       "labelDy": 24
     },
     {
-      "id": "f2-4",
-      "from": "webapp",
-      "to": "proxy",
-      "label": "2 · 3 · 4 HTTPS",
-      "variant": "emphasis"
+      "id": "f4",
+      "from": "backend",
+      "to": "db",
+      "label": "4 SQL"
     },
     {
       "id": "f5",
-      "from": "proxy",
-      "to": "backend",
-      "label": "5 HTTP intern"
+      "from": "backend",
+      "to": "mail",
+      "label": "5 Mail mit Link",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "bottom"
     },
     {
       "id": "f6",
-      "from": "backend",
-      "to": "db",
-      "label": "6 SQL",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "labelDy": 24
-    },
-    {
-      "id": "f7",
-      "from": "backend",
-      "to": "mail",
-      "label": "7 Mail mit Link",
-      "variant": "security"
-    },
-    {
-      "id": "f8",
       "from": "mail",
       "to": "postfach",
-      "label": "8 SMTP",
+      "label": "6 SMTP",
       "fromSide": "top",
       "toSide": "bottom"
     },
     {
-      "id": "link",
+      "id": "f7",
       "from": "postfach",
       "to": "julia",
-      "label": "9 öffnet den Link",
-      "variant": "default"
+      "label": "7 öffnet den Link"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Flüsse 2 bis 4 · HTTPS",
+      "title": "Pfeile 1 bis 3",
       "items": [
-        "2 Login: anonym",
-        "3 Reservierung: Session-Cookie",
-        "4 Reset: Einmal-Token"
-      ]
-    },
-    {
-      "dot": "emerald",
-      "title": "Flüsse 5 bis 8",
-      "items": [
-        "5 intern: Cookie + IP vom Proxy",
-        "6 SQL: DB-Benutzer der App",
-        "7, 8 Mail: API-Schlüssel, SMTP"
+        "1 Anmelden: noch anonym",
+        "2 Reservierung ändern: Cookie",
+        "3 Passwort zurücksetzen: Link"
       ]
     },
     {
       "dot": "amber",
-      "title": "Höchste Bedrohungen",
+      "title": "Hoch eingestuft",
       "items": [
-        "T1 Passwörter probieren (2)",
-        "T2 Reset-Token erraten (4)",
-        "T3 Konto auf fremde Adresse (2)"
+        "T1 Passwörter durchprobieren",
+        "T2 Link zum Zurücksetzen erraten",
+        "T3 Konto auf fremde E-Mail-Adresse"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Mittel und niedrig",
+      "items": [
+        "T4 Abmelden vergessen",
+        "T5 Zugriff auf das Postfach",
+        "T6 Formular verrät Kundinnen"
       ]
     }
   ]

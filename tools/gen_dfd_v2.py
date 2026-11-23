@@ -1,29 +1,28 @@
-"""Outlook data flow diagram (version 2) for the ASE security threat model, focus TT01, Lagerraum app.
+"""Outlook diagram (version 2) for the threat model of the Lagerraum app: tokens (JWT), two services, a cache.
 
-Version 2 shows only what is new or changes against version 1: tokens (JWT) instead of server sessions,
-two services behind the proxy, and a cache. Password reset by mail is unchanged and not drawn again.
-Style comes from diagram_style.py. Usage: python gen_dfd_v2.py <out.svg>
+Shows only what changes against version 1. Resetting the password by mail stays the same and is not drawn.
+Style comes from diagram_style.py.
+Usage: python gen_dfd_v2.py <out.svg>
 """
 import math
 import sys
 
 from diagram_style import W, head, arrowhead
 
-H = 1024
+H = 624
 EXTRA = """  <style>
-    .tb { fill: none; stroke: #B3261E; } .tb-f { fill: #B3261E; font: 600 13px "Cascadia Mono", Consolas, monospace; }
-    .legend { fill: #252A31; font: 400 13px "Cascadia Mono", Consolas, monospace; }
+    .tb { fill: none; stroke: #B3261E; } .tb-f { fill: #B3261E; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
+    .lbl { fill: #252A31; font: 400 14px Bahnschrift, "Segoe UI", sans-serif; }
+    .lbl-b { fill: #252A31; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
     @media (prefers-color-scheme: dark) {
-      .tb { stroke: #F0A29B; } .tb-f { fill: #F0A29B; } .legend { fill: #E1E7DE; }
+      .tb { stroke: #F0A29B; } .tb-f { fill: #F0A29B; } .lbl, .lbl-b { fill: #E1E7DE; }
     }
   </style>"""
 
-out = head(H, "Datenflussdiagramm Version 2: Token, zwei Dienste und Cache",
-           "Ausblick auf Version 2. Die Web-App meldet sich über den Reverse Proxy beim Konto-Dienst an und erhält "
-           "ein kurzlebiges Access-Token (JWT) und ein Refresh-Cookie. Der Reservierungs-Dienst prüft das Token "
-           "selbst. Der Konto-Dienst hält Konten und Refresh-Token in der zentralen Datenbank, beide Dienste nutzen "
-           "einen Cache für Fehlversuchs-Zähler, eine Sperrliste widerrufener Token und die Verfügbarkeit. Zwei "
-           "Trust Boundaries: Julias Gerät und das Backend. Zehn nummerierte Datenflüsse.", "tm-dfd-v2")
+out = head(H, "Datenflussdiagramm Version 2: Token, zwei Dienste, Cache",
+           "Ausblick. Julia meldet sich beim Konto-Dienst an und bekommt ein Token (JWT). Mit dem Token ändert sie "
+           "ihre Reservierung beim Reservierungs-Dienst, der das Token selbst prüft. Beide Dienste nutzen dieselbe "
+           "Datenbank und einen Cache für Fehlversuche und gesperrte Token.", "tm-dfd-v2")
 out.append(EXTRA)
 out.append(f'  <rect class="paper" x="0" y="0" width="{W}" height="{H}"/>')
 
@@ -35,29 +34,26 @@ def boundary(x, y, w, h, label, lx, ly, anchor="start"):
 
 def actor(x, y, w, h, name, sub):
     out.append(f'  <rect class="input" x="{x}" y="{y}" width="{w}" height="{h}" stroke-width="1.4"/>')
-    out.append(f'  <text class="name-s" x="{x + w / 2}" y="{y + h / 2 - 3}" text-anchor="middle">{name}</text>')
-    out.append(f'  <text class="mono" x="{x + w / 2}" y="{y + h / 2 + 15}" text-anchor="middle">{sub}</text>')
+    out.append(f'  <text class="name" x="{x + w / 2}" y="{y + h / 2 - 3}" text-anchor="middle">{name}</text>')
+    out.append(f'  <text class="lbl" x="{x + w / 2}" y="{y + h / 2 + 16}" text-anchor="middle">{sub}</text>')
 
 
-def process(cx, cy, r, lines, sub, cls="paper ink-s", name_cls="name-s"):
+def process(cx, cy, r, lines, cls="paper ink-s", name_cls="name"):
     out.append(f'  <circle class="{cls}" cx="{cx}" cy="{cy}" r="{r}" stroke-width="1.4"/>')
-    n = len(lines) + (1 if sub else 0)
-    y = cy - (n - 1) * 9 + 5
+    y = cy - (len(lines) - 1) * 9 + 5
     for t in lines:
         out.append(f'  <text class="{name_cls}" x="{cx}" y="{y:.0f}" text-anchor="middle">{t}</text>')
         y += 18
-    if sub:
-        out.append(f'  <text class="mono" x="{cx}" y="{y:.0f}" text-anchor="middle">{sub}</text>')
 
 
-def store(cx, top, name, sub, w=176, h=66, ry=9, cls="paper ink-s"):
+def store(cx, top, name, sub, w=176, h=66, ry=9):
     x0, x1 = cx - w / 2, cx + w / 2
-    out.append(f'  <path class="{cls}" stroke-width="1.4" d="M{x0},{top + ry} V{top + h - ry} A{w / 2},{ry} 0 0 0 {x1},{top + h - ry} V{top + ry} A{w / 2},{ry} 0 0 0 {x0},{top + ry} A{w / 2},{ry} 0 0 0 {x1},{top + ry}"/>')
-    out.append(f'  <text class="name-s" x="{cx}" y="{top + 34}" text-anchor="middle">{name}</text>')
-    out.append(f'  <text class="mono" x="{cx}" y="{top + 52}" text-anchor="middle">{sub}</text>')
+    out.append(f'  <path class="paper ink-s" stroke-width="1.4" d="M{x0},{top + ry} V{top + h - ry} A{w / 2},{ry} 0 0 0 {x1},{top + h - ry} V{top + ry} A{w / 2},{ry} 0 0 0 {x0},{top + ry} A{w / 2},{ry} 0 0 0 {x1},{top + ry}"/>')
+    out.append(f'  <text class="name" x="{cx}" y="{top + 34}" text-anchor="middle">{name}</text>')
+    out.append(f'  <text class="lbl" x="{cx}" y="{top + 52}" text-anchor="middle">{sub}</text>')
 
 
-def flow(points, both=False, r=8):
+def flow(points, r=8):
     d = [f"M{points[0][0]:.1f},{points[0][1]:.1f}"]
     for i in range(1, len(points)):
         (px, py), (x, y) = points[i - 1], points[i]
@@ -68,88 +64,52 @@ def flow(points, both=False, r=8):
             d.append(f"L{x - ux * r:.1f},{y - uy * r:.1f} Q{x:.1f},{y:.1f} {x + vx * r:.1f},{y + vy * r:.1f}")
         else:
             d.append(f"L{x:.1f},{y:.1f}")
-    out.append(f'  <path class="muted-s" d="{" ".join(d)}" fill="none" stroke-width="1.6"/>')
+    out.append(f'  <path class="muted-s" d="{" ".join(d)}" fill="none" stroke-width="1.8"/>')
     (ax, ay), (bx, by) = points[-2], points[-1]
     n = math.hypot(bx - ax, by - ay)
     out.append(arrowhead(bx, by, (bx - ax) / n, (by - ay) / n, "muted-f"))
-    if both:
-        (ax, ay), (bx, by) = points[1], points[0]
-        n = math.hypot(bx - ax, by - ay)
-        out.append(arrowhead(bx, by, (bx - ax) / n, (by - ay) / n, "muted-f"))
 
 
-def badge(x, y, n):
-    out.append(f'  <circle class="paper ink-s" cx="{x}" cy="{y}" r="11" stroke-width="1.4"/>')
-    out.append(f'  <text class="num" x="{x}" y="{y + 4.5}" text-anchor="middle">{n}</text>')
+def label(x, y, num, text, anchor="start"):
+    out.append(f'  <text class="lbl" x="{x}" y="{y}" text-anchor="{anchor}"><tspan class="lbl-b">{num}</tspan> {text}</text>')
 
 
-def chord(cy, r, dx, lower=True):
-    dy = math.sqrt(max(0.0, r * r - dx * dx))
-    return cy + dy if lower else cy - dy
+KONTO = (150, 300)
+RES = (450, 300)
+R = 56
 
+boundary(40, 12, 592, 104, "Julias Gerät", 52, 32)
+boundary(40, 222, 592, 306, "Unser Server", 620, 244, "end")
 
-R = 50
-WEB = (104, 190)
-PROXY = (104, 400)
-KONTO = (310, 400)
-RES = (528, 400)
+flow([(150, 104), (150, KONTO[1] - R)])                                         # 1
+flow([(450, 104), (450, RES[1] - R)])                                           # 2
+flow([(KONTO[0] - 20, KONTO[1] + math.sqrt(R * R - 400)), (KONTO[0] - 20, 410)])  # 3
+flow([(KONTO[0] + 30, KONTO[1] + math.sqrt(R * R - 900)), (KONTO[0] + 30, 380), (410, 380), (410, 410)])  # 4
+flow([(RES[0] + 20, RES[1] + math.sqrt(R * R - 400)), (RES[0] + 20, 410)])       # 5
+flow([(RES[0] + R, RES[1]), (604, RES[1]), (604, 506), (130, 506), (130, 476)])   # 6
 
-boundary(16, 122, 320, 132, "Julias Gerät", 326, 142, "end")
-boundary(16, 306, 640, 374, "Backend Lagerraum (Server, Docker Compose)", 28, 668)
-out.append('  <text class="aside" x="176" y="285">Internet</text>')
-out.append('  <text class="aside" x="372" y="170">Passwort-Reset per Mail: wie in</text>')
-out.append('  <text class="aside" x="372" y="192">Version 1, hier nicht gezeichnet.</text>')
-out.append('  <text class="aside" x="372" y="226">Neu sind Token, zwei Dienste, Cache.</text>')
+label(166, 150, "1", "Anmelden · HTTPS · anonym")
+out.append('  <text class="lbl" x="166" y="172">zurück kommt ein Token (JWT)</text>')
+label(466, 150, "2", "Reservierung ändern")
+out.append('  <text class="lbl" x="466" y="172">HTTPS · mit Token</text>')
+out.append('  <text class="lbl" x="466" y="194">Token wird hier geprüft</text>')
+out.append('  <text class="aside" x="134" y="194" text-anchor="end">Internet</text>')
+label(122, 392, "3", "Konten", "end")
+label(296, 372, "4", "Fehlversuche, gesperrte Token", "middle")
+label(482, 392, "5", "Token gesperrt?")
+label(367, 500, "6", "Reservierungen · SQL", "middle")
 
-# flows
-flow([(104, 82), (104, WEB[1] - R)])                                                        # 1
-for dx in (-34, 0, 34):                                                                     # 2, 3, 4
-    flow([(WEB[0] + dx, chord(WEB[1], R, dx)), (PROXY[0] + dx, chord(PROXY[1], R, dx, lower=False))])
-flow([(PROXY[0] + R, PROXY[1]), (KONTO[0] - R, KONTO[1])])                                  # 5
-flow([(PROXY[0] + 40, chord(PROXY[1], R, 40, lower=False)), (PROXY[0] + 40, 334), (RES[0], 334), (RES[0], RES[1] - R)])  # 6
-flow([(KONTO[0] - 20, chord(KONTO[1], R, -20)), (KONTO[0] - 20, 520)])                      # 7
-flow([(KONTO[0] + 28, chord(KONTO[1], R, 28)), (KONTO[0] + 28, 482), (452, 482), (452, 520)])  # 8
-flow([(RES[0] - 24, chord(RES[1], R, -24)), (RES[0] - 24, 520)])                            # 9
-flow([(RES[0] + R, RES[1]), (622, 400), (622, 618), (250, 618), (250, 588)])                # 10
+actor(60, 44, 552, 60, "Julia", "im Browser")
+process(*KONTO, R, ["Konto-", "Dienst"], cls="acc", name_cls="name-acc")
+process(*RES, R, ["Reservierungs-", "Dienst"])
+store(130, 410, "Datenbank", "Konten · Reservierungen", w=168)
+store(440, 410, "Cache", "Zähler · Sperrliste", w=168)
 
-# elements
-actor(28, 26, 152, 56, "Julia", "Kundin")
-process(*WEB, R, ["Web-App"], "Browser")
-process(*PROXY, R, ["Reverse", "Proxy"], "Traefik")
-process(*KONTO, R, ["Konto-", "Dienst"], "Aussteller", cls="acc", name_cls="name-acc")
-process(*RES, R, ["Reservie-", "rungs-Dienst"], "prüft JWT")
-store(250, 520, "Zentrale Datenbank", "Konten · Reservierungen", w=216)
-store(486, 520, "Cache", "Zähler · Sperrliste", w=176)
-
-for (x, y, n) in ((104, 104, 1), (70, 282, 2), (104, 282, 3), (138, 282, 4), (207, 400, 5),
-                  (350, 334, 6), (290, 486, 7), (400, 482, 8), (504, 486, 9), (430, 618, 10)):
-    badge(x, y, n)
-
-y = 716
-out.append(f'  <text class="name" x="16" y="{y}">Datenflüsse Version 2: was · wie · als wer</text>')
-lines = [
-    (1, "E-Mail-Adresse, Passwort · Eingabe am Gerät · Julia"),
-    (2, "Login · HTTPS · anonym. Antwort: Access-Token (JWT) + Refresh-Cookie"),
-    (3, "Box-Reservierung lesen, ändern, stornieren · HTTPS · Access-Token (JWT)"),
-    (4, "Access-Token erneuern · HTTPS · Refresh-Cookie"),
-    (5, "Login und Erneuern weitergereicht · HTTP intern · Proxy"),
-    (6, "Anfragen mit JWT weitergereicht · HTTP intern · JWT der Kundin"),
-    (7, "Konten, Passwort-Hash, Hash des Refresh-Tokens · SQL · DB-Benutzer Konto"),
-    (8, "Fehlversuchs-Zähler, Sperrliste schreiben · Redis-Protokoll · Cache-Passwort"),
-    (9, "Sperrliste lesen, Verfügbarkeit zwischenspeichern · Redis · Cache-Passwort"),
-    (10, "Reservierungen lesen und schreiben · SQL · DB-Benutzer Reservierung"),
-]
-for n, text in lines:
-    y += 22
-    out.append(f'  <text class="num" x="34" y="{y}" text-anchor="end">{n}</text>')
-    out.append(f'  <text class="legend" x="46" y="{y}">{text}</text>')
-y += 30
-out.append(f'  <text class="mono" x="16" y="{y}">Pfeil = Richtung der Anfrage, Antworten sind nicht gezeichnet</text>')
-y += 20
-out.append(f'  <text class="mono" x="16" y="{y}">Rechteck = externer Akteur · Kreis = Prozess · Zylinder = Datenspeicher</text>')
-out.append(f'  <text class="mono" x="16" y="{y + 20}">rot gestrichelt = Trust Boundary · blau = Schwerpunkt TT01</text>')
+out.append(f'  <text class="mono" x="40" y="{H - 62}">Passwort zurücksetzen per Mail: wie in Version 1, hier nicht gezeichnet</text>')
+out.append(f'  <text class="mono" x="40" y="{H - 42}">Rechteck = Person oder fremdes System · Kreis = unser Code · Zylinder = Daten</text>')
+out.append(f'  <text class="mono" x="40" y="{H - 22}">rot gestrichelt = Trust Boundary: hier wechselt, wer die Kontrolle hat</text>')
 out.append("</svg>")
 
 with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(out) + "\n")
-print("wrote", sys.argv[1], "height", H, "legend ends at", y + 20)
+print("wrote", sys.argv[1], "height", H)
