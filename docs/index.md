@@ -16,7 +16,7 @@ Der Prototyp läuft im Browser und ist für das Handy gebaut. Die Volumen-API un
   <li><a href="{{ '/ux/persona.html' | relative_url }}"><strong>Persona und Szenario</strong><span>Julia Brandt, Nutzungskontext, Ist- und Soll-Szenario, User Journey, User Stories.</span></a></li>
   <li><a href="{{ '/ux/cognitive-walkthrough.html' | relative_url }}"><strong>Cognitive Walkthrough</strong><span>Eigener Walkthrough in fünf Schritten mit Screenshots und neun Befunden.</span></a></li>
   <li><a href="{{ '/ux/testplan.html' | relative_url }}"><strong>Testplan</strong><span>Drei neutrale Aufgaben, Testskript, Beobachtungsblatt und Auswertung.</span></a></li>
-  <li><a href="{{ '/threat-model/' | relative_url }}"><strong>Threat Model</strong><span>Benutzerkonto und Login: Datenflüsse, Trust Boundaries, Bedrohungen, Maßnahmen und ein Ausblick auf Version 2.</span></a></li>
+  <li><a href="{{ '/threat-model/' | relative_url }}"><strong>Threat Model</strong><span>Benutzerkonto und Login: Datenflüsse, Trust Boundaries, Bedrohungen und was die fertige App dagegen tut.</span></a></li>
 </ul>
 
 ## Stand

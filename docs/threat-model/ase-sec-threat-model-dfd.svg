@@ -1,77 +1,112 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="672" viewBox="0 0 672 560" role="img" aria-labelledby="tm-dfd-title tm-dfd-desc">
-  <title id="tm-dfd-title">Datenflussdiagramm: Konto und Login im Lagerraum Box-Check</title>
-  <desc id="tm-dfd-desc">Julia meldet sich im Browser an. Login, Änderungen an der Reservierung und das Zurücksetzen des Passworts gehen über das Internet an unser Backend. Das Backend speichert Konten und Reservierungen in einer Datenbank und verschickt den Link zum Zurücksetzen über einen fremden E-Mail-Dienst in Julias Postfach. Drei Trust Boundaries: Julias Gerät, unser Server, Drittanbieter.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="672" viewBox="0 0 672 716" role="img" aria-labelledby="tm-title tm-desc">
+  <title id="tm-title">Datenflussdiagramm: Konto und Login in der fertigen App</title>
+  <desc id="tm-desc">Julia meldet sich im Browser beim Konto-Dienst an und bekommt ein Token. Mit dem Token ändert sie ihre Reservierung beim Reservierungs-Dienst. Beide Dienste nutzen eine Datenbank und einen Cache. Den Link zum Zurücksetzen des Passworts verschickt der Konto-Dienst über einen fremden E-Mail-Dienst in Julias Postfach. Vier Trust Boundaries: Julias Gerät, unser Server, Drittanbieter, Mail-Anbieter. Gelbe Marken T1 bis T11 zeigen, wo eine Bedrohung ansetzt.</desc>
   <style>
-    .paper { fill: #FBFCFE; } .gap { stroke: #FBFCFE; }
-    .ink-s { stroke: #252A31; } .ink-f { fill: #252A31; }
-    .muted-s { stroke: #636D79; } .muted-f { fill: #636D79; }
-    .soft-s { stroke: #98A1AC; }
-    .input { fill: #F0F3F7; stroke: #98A1AC; }
-    .acc { fill: #E8EDF8; stroke: #1C3D96; } .acc-f { fill: #1C3D96; }
-    .name { fill: #252A31; font: 600 15px Bahnschrift, "Segoe UI", sans-serif; }
-    .name-s { fill: #252A31; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
-    .name-acc { fill: #1C3D96; font: 600 15px Bahnschrift, "Segoe UI", sans-serif; }
-    .mono { fill: #636D79; font: 400 13px "Cascadia Mono", Consolas, monospace; }
-    .aside { fill: #636D79; font: italic 400 15px "Sitka Text", Georgia, serif; }
-    .num { fill: #252A31; font: 600 13px "Cascadia Mono", Consolas, monospace; }
-    @media (prefers-color-scheme: dark) {
-      .paper { fill: #1F2E28; } .gap { stroke: #1F2E28; }
-      .ink-s { stroke: #E1E7DE; } .ink-f { fill: #E1E7DE; }
-      .muted-s { stroke: #9BAAA0; } .muted-f { fill: #9BAAA0; }
-      .soft-s { stroke: #6F8177; }
-      .input { fill: #26372F; stroke: #6F8177; }
-      .acc { fill: #2A3D46; stroke: #A9C9F1; } .acc-f { fill: #A9C9F1; }
-      .name, .name-s { fill: #E1E7DE; } .name-acc { fill: #A9C9F1; }
-      .mono, .aside { fill: #9BAAA0; } .num { fill: #E1E7DE; }
-    }
+    text { font-family: Barlow, "Segoe UI", system-ui, sans-serif; fill: #171B20; }
+    .name { font-size: 15px; font-weight: 700; }
+    .sub { font-size: 13px; fill: #515A65; }
+    .lbl { font-size: 14px; paint-order: stroke; stroke: #FFFFFF; stroke-width: 5px; stroke-linejoin: round; }
+    .num { font-weight: 700; fill: #1F4E8C; }
+    .note { font-size: 13px; fill: #515A65; }
+    .tb { fill: none; stroke: #A1241F; stroke-width: 1.6; stroke-dasharray: 7 5; }
+    .tb-l { font-size: 14px; font-weight: 700; fill: #A1241F; }
+    .actor { fill: #E9EBED; stroke: #515A65; stroke-width: 1.4; }
+    .proc { fill: #FFFFFF; stroke: #171B20; stroke-width: 1.6; }
+    .main { fill: #EDF3FA; stroke: #1F4E8C; stroke-width: 2; }
+    .store { fill: #FFFFFF; stroke: #171B20; stroke-width: 1.6; }
+    .flow { fill: none; stroke: #515A65; stroke-width: 1.8; }
+    .head { fill: #515A65; }
+    .chip { fill: #F4C20D; stroke: #171B20; stroke-width: 1.2; }
+    .chip-t { font-size: 13px; font-weight: 700; }
   </style>
-  <style>
-    .tb { fill: none; stroke: #B3261E; } .tb-f { fill: #B3261E; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
-    .lbl { fill: #252A31; font: 400 14px Bahnschrift, "Segoe UI", sans-serif; }
-    .lbl-b { fill: #252A31; font: 600 14px Bahnschrift, "Segoe UI", sans-serif; }
-    @media (prefers-color-scheme: dark) {
-      .tb { stroke: #F0A29B; } .tb-f { fill: #F0A29B; } .lbl, .lbl-b { fill: #E1E7DE; }
-    }
-  </style>
-  <rect class="paper" x="0" y="0" width="672" height="560"/>
-  <rect class="tb" x="40" y="12" width="248" height="104" rx="10" stroke-width="1.6" stroke-dasharray="7 5"/>
-  <text class="tb-f" x="52" y="32" text-anchor="start">Julias Gerät</text>
-  <rect class="tb" x="40" y="234" width="404" height="236" rx="10" stroke-width="1.6" stroke-dasharray="7 5"/>
-  <text class="tb-f" x="52" y="458" text-anchor="start">Unser Server</text>
-  <rect class="tb" x="470" y="234" width="190" height="170" rx="10" stroke-width="1.6" stroke-dasharray="7 5"/>
-  <text class="tb-f" x="482" y="392" text-anchor="start">Drittanbieter</text>
-  <path class="muted-s" d="M160.0,104.0 L160.0,262.0" fill="none" stroke-width="1.8"/>
-  <polygon class="muted-f" points="160.0,262.0 155.8,252.9 164.2,252.9"/>
-  <path class="muted-s" d="M216.0,318.0 L252.0,318.0" fill="none" stroke-width="1.8"/>
-  <polygon class="muted-f" points="252.0,318.0 242.9,322.2 242.9,313.8"/>
-  <path class="muted-s" d="M160.0,374.0 L160.0,420.0 Q160.0,428.0 168.0,428.0 L558.0,428.0 Q566.0,428.0 566.0,420.0 L566.0,368.0" fill="none" stroke-width="1.8"/>
-  <polygon class="muted-f" points="566.0,368.0 570.2,377.1 561.8,377.1"/>
-  <path class="muted-s" d="M566.0,268.0 L566.0,104.0" fill="none" stroke-width="1.8"/>
-  <polygon class="muted-f" points="566.0,104.0 570.2,113.1 561.8,113.1"/>
-  <path class="muted-s" d="M470.0,72.0 L270.0,72.0" fill="none" stroke-width="1.8"/>
-  <polygon class="muted-f" points="270.0,72.0 279.1,67.8 279.1,76.2"/>
-  <text class="lbl" x="178" y="150" text-anchor="start"><tspan class="lbl-b">1</tspan> Anmelden · HTTPS · noch anonym</text>
-  <text class="lbl" x="178" y="174" text-anchor="start"><tspan class="lbl-b">2</tspan> Reservierung ändern · HTTPS · Cookie</text>
-  <text class="lbl" x="178" y="198" text-anchor="start"><tspan class="lbl-b">3</tspan> Passwort zurücksetzen · HTTPS · Link aus der Mail</text>
-  <text class="aside" x="142" y="178" text-anchor="end">Internet</text>
-  <text class="lbl" x="334" y="274" text-anchor="middle"><tspan class="lbl-b">4</tspan> Konten, Reservierungen · SQL</text>
-  <text class="lbl" x="364" y="420" text-anchor="middle"><tspan class="lbl-b">5</tspan> Mail mit Link · HTTPS · API-Schlüssel</text>
-  <text class="lbl" x="578" y="176" text-anchor="start"><tspan class="lbl-b">6</tspan> Mail · SMTP</text>
-  <text class="lbl" x="370" y="62" text-anchor="middle"><tspan class="lbl-b">7</tspan> öffnet den Link</text>
-  <rect class="input" x="60" y="44" width="210" height="60" stroke-width="1.4"/>
-  <text class="name" x="165.0" y="71.0" text-anchor="middle">Julia</text>
-  <text class="lbl" x="165.0" y="90.0" text-anchor="middle">im Browser</text>
-  <rect class="input" x="470" y="44" width="190" height="60" stroke-width="1.4"/>
-  <text class="name" x="565.0" y="71.0" text-anchor="middle">Julias Postfach</text>
-  <text class="lbl" x="565.0" y="90.0" text-anchor="middle">bei ihrem E-Mail-Anbieter</text>
-  <circle class="acc" cx="160" cy="318" r="56" stroke-width="1.4"/>
-  <text class="name-acc" x="160" y="323" text-anchor="middle">Backend</text>
-  <circle class="paper ink-s" cx="566" cy="318" r="50" stroke-width="1.4"/>
-  <text class="name" x="566" y="314" text-anchor="middle">E-Mail-</text>
-  <text class="name" x="566" y="332" text-anchor="middle">Dienst</text>
-  <path class="paper ink-s" stroke-width="1.4" d="M252.0,294 V342 A82.0,9 0 0 0 416.0,342 V294 A82.0,9 0 0 0 252.0,294 A82.0,9 0 0 0 416.0,294"/>
-  <text class="name" x="334" y="319" text-anchor="middle">Datenbank</text>
-  <text class="lbl" x="334" y="337" text-anchor="middle">Konten · Reservierungen</text>
-  <text class="mono" x="40" y="516">Rechteck = Person oder fremdes System · Kreis = unser Code · Zylinder = Daten</text>
-  <text class="mono" x="40" y="536">rot gestrichelt = Trust Boundary: hier wechselt, wer die Kontrolle hat</text>
+  <rect x="0" y="0" width="672" height="716" fill="#FFFFFF"/>
+  <rect class="tb" x="24" y="14" width="392" height="104" rx="10"/>
+  <text class="tb-l" x="36" y="34" text-anchor="start">Julias Gerät</text>
+  <rect class="tb" x="484" y="14" width="172" height="104" rx="10"/>
+  <text class="tb-l" x="496" y="34" text-anchor="start">Mail-Anbieter</text>
+  <rect class="tb" x="24" y="254" width="436" height="356" rx="10"/>
+  <text class="tb-l" x="448" y="598" text-anchor="end">Unser Server</text>
+  <rect class="tb" x="484" y="254" width="172" height="164" rx="10"/>
+  <text class="tb-l" x="644" y="406" text-anchor="end">Drittanbieter</text>
+  <text class="note" x="36" y="240" font-style="italic">Internet</text>
+  <path class="flow" d="M130.0,106.0 L130.0,284.0"/>
+  <polygon class="head" points="130.0,284.0 125.8,274.9 134.2,274.9"/>
+  <path class="flow" d="M350.0,106.0 L350.0,284.0"/>
+  <polygon class="head" points="350.0,284.0 345.8,274.9 354.2,274.9"/>
+  <path class="flow" d="M402.0,336.0 L498.0,336.0"/>
+  <polygon class="head" points="498.0,336.0 488.9,340.2 488.9,331.8"/>
+  <path class="flow" d="M570.0,306.0 L570.0,106.0"/>
+  <polygon class="head" points="570.0,106.0 574.2,115.1 565.8,115.1"/>
+  <path class="flow" d="M498.0,76.0 L402.0,76.0"/>
+  <polygon class="head" points="402.0,76.0 411.1,71.8 411.1,80.2"/>
+  <path class="flow" d="M110.0,384.0 L110.0,480.0"/>
+  <polygon class="head" points="110.0,480.0 105.8,470.9 114.2,470.9"/>
+  <path class="flow" d="M370.0,384.0 L370.0,476.0"/>
+  <polygon class="head" points="370.0,476.0 365.8,466.9 374.2,466.9"/>
+  <path class="flow" d="M320.0,378.5 L320.0,428.0 Q320.0,436.0 312.0,436.0 L203.0,436.0 Q195.0,436.0 195.0,444.0 L195.0,480.0"/>
+  <polygon class="head" points="195.0,480.0 190.8,470.9 199.2,470.9"/>
+  <path class="flow" d="M78.0,336.0 L44.0,336.0 Q36.0,336.0 36.0,344.0 L36.0,564.0 Q36.0,572.0 44.0,572.0 L322.0,572.0 Q330.0,572.0 330.0,564.0 L330.0,542.0"/>
+  <polygon class="head" points="330.0,542.0 334.2,551.1 325.8,551.1"/>
+  <text class="lbl" x="146" y="150" text-anchor="start"><tspan class="num">2</tspan> Reservieren, ändern</text>
+  <text class="lbl" x="146" y="170" text-anchor="start">HTTPS · mit Token</text>
+  <text class="lbl" x="366" y="150" text-anchor="start"><tspan class="num">1</tspan> Anmelden, Konto anlegen</text>
+  <text class="lbl" x="366" y="170" text-anchor="start">HTTPS · zurück kommt ein Token</text>
+  <text class="lbl" x="366" y="198" text-anchor="start"><tspan class="num">3</tspan> Passwort zurücksetzen</text>
+  <text class="lbl" x="366" y="218" text-anchor="start">HTTPS · Link aus der Mail</text>
+  <text class="lbl" x="431" y="314" text-anchor="middle"><tspan class="num">8</tspan> Mail</text>
+  <text class="lbl" x="431" y="329" text-anchor="middle">mit Link</text>
+  <text class="lbl" x="582" y="214" text-anchor="start"><tspan class="num">9</tspan> Mail</text>
+  <text class="lbl" x="450" y="68" text-anchor="middle"><tspan class="num">10</tspan> Link</text>
+  <text class="lbl" x="382" y="458" text-anchor="start"><tspan class="num">4</tspan> Konten</text>
+  <text class="lbl" x="205" y="428" text-anchor="start"><tspan class="num">5</tspan> Zähler, Sperrliste</text>
+  <text class="lbl" x="122" y="462" text-anchor="start"><tspan class="num">6</tspan> gesperrt?</text>
+  <text class="lbl" x="186" y="564" text-anchor="middle"><tspan class="num">7</tspan> Reservierungen</text>
+  <rect class="actor" x="40" y="46" width="362" height="60" rx="4"/>
+  <text class="name" x="221.0" y="73.0" text-anchor="middle">Julia</text>
+  <text class="sub" x="221.0" y="91.0" text-anchor="middle">im Browser</text>
+  <rect class="actor" x="498" y="46" width="144" height="60" rx="4"/>
+  <text class="name" x="570.0" y="73.0" text-anchor="middle">Julias Postfach</text>
+  <text class="sub" x="570.0" y="91.0" text-anchor="middle">bei ihrem Anbieter</text>
+  <rect class="actor" x="498" y="306" width="144" height="60" rx="4"/>
+  <text class="name" x="570.0" y="333.0" text-anchor="middle">E-Mail-Dienst</text>
+  <text class="sub" x="570.0" y="351.0" text-anchor="middle">verschickt für uns</text>
+  <circle class="proc" cx="130" cy="336" r="52"/>
+  <text class="name" x="130" y="332" text-anchor="middle">Reservie-</text>
+  <text class="name" x="130" y="350" text-anchor="middle">rungs-Dienst</text>
+  <circle class="main" cx="350" cy="336" r="52"/>
+  <text class="name" x="350" y="332" text-anchor="middle">Konto-</text>
+  <text class="name" x="350" y="350" text-anchor="middle">Dienst</text>
+  <path class="store" d="M50.0,485 V533 A80.0,9 0 0 0 210.0,533 V485 A80.0,9 0 0 0 50.0,485 A80.0,9 0 0 0 210.0,485"/>
+  <text class="name" x="130" y="511" text-anchor="middle">Cache</text>
+  <text class="sub" x="130" y="529" text-anchor="middle">Zähler · Sperrliste</text>
+  <path class="store" d="M265.0,485 V533 A85.0,9 0 0 0 435.0,533 V485 A85.0,9 0 0 0 265.0,485 A85.0,9 0 0 0 435.0,485"/>
+  <text class="name" x="350" y="511" text-anchor="middle">Datenbank</text>
+  <text class="sub" x="350" y="529" text-anchor="middle">Konten · Reservierungen</text>
+  <rect class="chip" x="306" y="136" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="321.0" y="150.5" text-anchor="middle">T1</text>
+  <rect class="chip" x="306" y="160" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="321.0" y="174.5" text-anchor="middle">T3</text>
+  <rect class="chip" x="306" y="184" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="321.0" y="198.5" text-anchor="middle">T2</text>
+  <rect class="chip" x="306" y="208" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="321.0" y="222.5" text-anchor="middle">T6</text>
+  <rect class="chip" x="86" y="136" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="101.0" y="150.5" text-anchor="middle">T7</text>
+  <rect class="chip" x="86" y="160" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="101.0" y="174.5" text-anchor="middle">T8</text>
+  <rect class="chip" x="366" y="22" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="381.0" y="36.5" text-anchor="middle">T4</text>
+  <rect class="chip" x="606" y="22" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="621.0" y="36.5" text-anchor="middle">T5</text>
+  <rect class="chip" x="398" y="270" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="413.0" y="284.5" text-anchor="middle">T9</text>
+  <rect class="chip" x="54" y="448" width="38" height="20" rx="5"/>
+  <text class="chip-t" x="73.0" y="462.5" text-anchor="middle">T10</text>
+  <rect class="chip" x="382" y="416" width="38" height="20" rx="5"/>
+  <text class="chip-t" x="401.0" y="430.5" text-anchor="middle">T11</text>
+  <rect class="chip" x="24" y="632" width="30" height="20" rx="5"/>
+  <text class="chip-t" x="39.0" y="646.5" text-anchor="middle">T1</text>
+  <text class="note" x="62" y="647">Hier setzt eine Bedrohung an. Die Nummer steht in der Tabelle.</text>
+  <text class="note" x="24" y="676">Rechteck = Person oder fremdes System · Kreis = unser Code (blau = Schwerpunkt) · Zylinder = Daten</text>
+  <text class="note" x="24" y="696">Rot gestrichelt = Trust Boundary: hier wechselt, wer die Kontrolle hat</text>
 </svg>
